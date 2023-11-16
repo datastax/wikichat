@@ -2,17 +2,28 @@ import { AstraDB } from "@datastax/astra-db-ts";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import 'dotenv/config'
 import sampleData from './sample_data.json';
-// import OpenAI from 'openai';
-import { BedrockRuntimeClient, InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime";
 import { SimilarityMetric } from "../app/hooks/useConfiguration";
+import { BedrockEmbeddings } from "langchain/embeddings/bedrock";
 
-// const openai = new OpenAI({
-//   apiKey: process.env.OPENAI_API_KEY,
-// });
+const {
+  ASTRA_DB_APPLICATION_TOKEN,
+  ASTRA_DB_ID,
+  ASTRA_DB_REGION,
+  ASTRA_DB_NAMESPACE,
+  BEDROCK_AWS_REGION,
+  BEDROCK_AWS_ACCESS_KEY_ID,
+  BEDROCK_AWS_SECRET_ACCESS_KEY
+} = process.env;
 
-const bedrockClient = new BedrockRuntimeClient({});
 
-const {ASTRA_DB_APPLICATION_TOKEN, ASTRA_DB_ID, ASTRA_DB_REGION, ASTRA_DB_NAMESPACE } = process.env;
+const embeddings = new BedrockEmbeddings({
+  region: BEDROCK_AWS_REGION,
+  credentials: {
+    accessKeyId: BEDROCK_AWS_ACCESS_KEY_ID,
+    secretAccessKey: BEDROCK_AWS_SECRET_ACCESS_KEY,
+  },
+  model: "amazon.titan-embed-text-v1"
+});
 
 const astraDb = new AstraDB(ASTRA_DB_APPLICATION_TOKEN, ASTRA_DB_ID, ASTRA_DB_REGION, ASTRA_DB_NAMESPACE);
 
@@ -28,7 +39,7 @@ const similarityMetrics: SimilarityMetric[] = [
 ]
 
 const createCollection = async (similarity_metric: SimilarityMetric = 'cosine') => {
-  const res = await astraDb.createCollection(`chat_${similarity_metric}`, {
+  const res = await astraDb.createCollection(`aws_${similarity_metric}`, {
     vector: {
       size: 1536,
       function: similarity_metric,
@@ -38,24 +49,16 @@ const createCollection = async (similarity_metric: SimilarityMetric = 'cosine') 
 };
 
 const loadSampleData = async (similarity_metric: SimilarityMetric = 'cosine') => {
-  const collection = await astraDb.collection(`chat_${similarity_metric}`);
+  const collection = await astraDb.collection(`aws_${similarity_metric}`);
   for await (const { url, title, content} of sampleData) {
     const chunks = await splitter.splitText(content);
     let i = 0;
     for await (const chunk of chunks) {
-      const input = {
-        body: chunk,
-        contentType: 'application/json',
-        modelId: 'amazon.titan-embed-text-v1'
-      };
-      const command = new InvokeModelCommand(input);
-      const response = await bedrockClient.send(command);
-
-      // const {data} = await openai.embeddings.create({input: chunk, model: 'text-embedding-ada-002'});
+      const response = await embeddings.embedQuery(chunk);
 
       const res = await collection.insertOne({
         document_id: `${url}-${i}`,
-        $vector: response.body,
+        $vector: response,
         url,
         title,
         content: chunk
