@@ -5,7 +5,7 @@ const Footer = () => {
       <a
         className=" vercel-link flex h-8 w-max flex-none items-center justify-center border rounded-md text-xs"
         aria-label="Deploy on Vercel"
-        href="https://vercel.com/templates/next.js/ragbot-starter"
+        href="https://vercel.com/new/clone?repository-url=https://github.com/datastax/aws-bedrock-starter&env=ASTRA_DB_NAMESPACE,OPENAI_API_KEY,ASTRA_DB_ID,ASTRA_DB_REGION,ASTRA_DB_APPLICATION_TOKEN"
       >
         <span className="px-3">▲</span>
         <hr className="h-full border-r" />
