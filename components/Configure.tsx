@@ -21,8 +21,8 @@ const Configure = ({ isOpen, onClose, useRag, llm, similarityMetric, setConfigur
   if (!isOpen) return null;
 
   const llmOptions = [
-    { label: 'GPT 3.5 Turbo', value: 'gpt-3.5-turbo' },
-    { label: 'GPT 4', value: 'gpt-4' }
+    { label: 'AI21 Labs: Jurassic-2 Mid', value: 'ai21.j2-mid-v1' },
+    { label: 'AI21 Labs: Jurassic-2 Ultra', value: 'ai21.j2-ultra-v1' }
   ];
 
   const similarityMetricOptions = [

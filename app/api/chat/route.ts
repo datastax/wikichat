@@ -1,28 +1,55 @@
-import OpenAI from 'openai';
-import {OpenAIStream, StreamingTextResponse} from 'ai';
+import { BedrockEmbeddings } from "langchain/embeddings/bedrock";
+import { BedrockChat } from "langchain/chat_models/bedrock/web";
+import { BaseMessage, AIMessage, HumanMessage } from "langchain/schema";
+import { LangChainStream, StreamingTextResponse} from 'ai';
 import {AstraDB} from "@datastax/astra-db-ts";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+const {
+  ASTRA_DB_APPLICATION_TOKEN,
+  ASTRA_DB_ID,
+  ASTRA_DB_REGION,
+  ASTRA_DB_NAMESPACE,
+  BEDROCK_AWS_REGION,
+  BEDROCK_AWS_ACCESS_KEY_ID,
+  BEDROCK_AWS_SECRET_ACCESS_KEY
+} = process.env;
+
+const embeddings = new BedrockEmbeddings({
+  region: BEDROCK_AWS_REGION,
+  credentials: {
+    accessKeyId: BEDROCK_AWS_ACCESS_KEY_ID,
+    secretAccessKey: BEDROCK_AWS_SECRET_ACCESS_KEY,
+  },
+  model: "amazon.titan-embed-text-v1"
 });
 
-const astraDb = new AstraDB(process.env.ASTRA_DB_APPLICATION_TOKEN, process.env.ASTRA_DB_ID, process.env.ASTRA_DB_REGION, process.env.ASTRA_DB_NAMESPACE);
+const astraDb = new AstraDB(ASTRA_DB_APPLICATION_TOKEN, ASTRA_DB_ID, ASTRA_DB_REGION, ASTRA_DB_NAMESPACE);
 
 export async function POST(req: Request) {
   try {
     const {messages, useRag, llm, similarityMetric} = await req.json();
+    const { stream, handlers, writer } = LangChainStream();
+    const bedrock = new BedrockChat({
+      region: BEDROCK_AWS_REGION,
+      credentials: {
+        accessKeyId: BEDROCK_AWS_ACCESS_KEY_ID,
+        secretAccessKey: BEDROCK_AWS_SECRET_ACCESS_KEY,
+      },
+      model: 'ai21.j2-mid-v1',
+      streaming: true,
+    });
 
     const latestMessage = messages[messages?.length - 1]?.content;
 
     let docContext = '';
     if (useRag) {
-      const {data} = await openai.embeddings.create({input: latestMessage, model: 'text-embedding-ada-002'});
+      const embedded = await embeddings.embedQuery(latestMessage);
 
-      const collection = await astraDb.collection(`chat_${similarityMetric}`);
+      const collection = await astraDb.collection(`aws_${similarityMetric}`);
 
       const cursor= collection.find(null, {
         sort: {
-          $vector: data[0]?.embedding,
+          $vector: embedded,
         },
         limit: 5,
       });
@@ -45,15 +72,13 @@ export async function POST(req: Request) {
       },
     ]
 
+    bedrock.call(
+      [...ragPrompt, ...messages].map(m =>
+        m.role == 'user'
+          ? new HumanMessage(m.content)
+          : new AIMessage(m.content),
+    ), {}, [handlers]);
 
-    const response = await openai.chat.completions.create(
-      {
-        model: llm ?? 'gpt-3.5-turbo',
-        stream: true,
-        messages: [...ragPrompt, ...messages],
-      }
-    );
-    const stream = OpenAIStream(response);
     return new StreamingTextResponse(stream);
   } catch (e) {
     throw e;
