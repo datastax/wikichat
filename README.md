@@ -1,4 +1,4 @@
-# AWS Bedrock Starter
+# Amazon Bedrock Starter
 
 This project is a starter for creating a chatbot using Astra DB and AWS Bedrock. It's designed to be easy to deploy and use, with a focus on performance and usability.
 
@@ -15,7 +15,7 @@ This project is a starter for creating a chatbot using Astra DB and AWS Bedrock.
 
 - An Astra DB account. You can [create one here](https://astra.datastax.com/register).
     - An Astra Vector Database
-- An AWS Bedrock instance.
+- An Amazon Bedrock instance.
 
 ### Setup
 

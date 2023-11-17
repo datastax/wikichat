@@ -1,7 +1,10 @@
 import { BedrockEmbeddings } from "langchain/embeddings/bedrock";
 import { BedrockChat } from "langchain/chat_models/bedrock/web";
-import { BaseMessage, AIMessage, HumanMessage } from "langchain/schema";
-import { LangChainStream, StreamingTextResponse} from 'ai';
+import { ConversationalRetrievalQAChain } from "langchain/chains";
+import { AIMessage, HumanMessage } from "langchain/schema";
+import { BytesOutputParser } from 'langchain/schema/output_parser';
+import { PromptTemplate } from 'langchain/prompts';
+import { LangChainStream, StreamingTextResponse, Message as VercelChatMessage,} from 'ai';
 import {AstraDB} from "@datastax/astra-db-ts";
 
 const {
@@ -9,9 +12,10 @@ const {
   ASTRA_DB_ID,
   ASTRA_DB_REGION,
   ASTRA_DB_NAMESPACE,
+  ASTRA_DB_COLLECTION,
   BEDROCK_AWS_REGION,
   BEDROCK_AWS_ACCESS_KEY_ID,
-  BEDROCK_AWS_SECRET_ACCESS_KEY
+  BEDROCK_AWS_SECRET_ACCESS_KEY,
 } = process.env;
 
 const embeddings = new BedrockEmbeddings({
@@ -25,27 +29,33 @@ const embeddings = new BedrockEmbeddings({
 
 const astraDb = new AstraDB(ASTRA_DB_APPLICATION_TOKEN, ASTRA_DB_ID, ASTRA_DB_REGION, ASTRA_DB_NAMESPACE);
 
+const formatMessage = (message: VercelChatMessage) => {
+  return `${message.role}: ${message.content}`;
+};
+
 export async function POST(req: Request) {
   try {
     const {messages, useRag, llm, similarityMetric} = await req.json();
-    const { stream, handlers, writer } = LangChainStream();
+
+    console.log(llm)
+    const latestMessage = messages[messages?.length - 1]?.content;
+    const { stream, handlers, } = LangChainStream();
     const bedrock = new BedrockChat({
       region: BEDROCK_AWS_REGION,
       credentials: {
         accessKeyId: BEDROCK_AWS_ACCESS_KEY_ID,
         secretAccessKey: BEDROCK_AWS_SECRET_ACCESS_KEY,
       },
-      model: 'ai21.j2-mid-v1',
+      model: llm,
       streaming: true,
+      // callbacks: [handlers]
     });
-
-    const latestMessage = messages[messages?.length - 1]?.content;
 
     let docContext = '';
     if (useRag) {
       const embedded = await embeddings.embedQuery(latestMessage);
 
-      const collection = await astraDb.collection(`aws_${similarityMetric}`);
+      const collection = await astraDb.collection(ASTRA_DB_COLLECTION);
 
       const cursor= collection.find(null, {
         sort: {
@@ -56,28 +66,46 @@ export async function POST(req: Request) {
       
       const documents = await cursor.toArray();
       
-      docContext = `
-        START CONTEXT
-        ${documents?.map(doc => doc.content).join("\n")}
-        END CONTEXT
-      `
+      docContext = `${documents?.map(doc => doc.content).join("\n")}`
     }
-    const ragPrompt = [
-      {
-        role: 'system',
-        content: `You are an AI assistant answering questions about Cassandra and Astra DB. Format responses using markdown where applicable.
-        ${docContext} 
+    const Template = {
+      role: 'system',
+      content: `You are an AI assistant answering questions about Cassandra and Astra DB using the context and chat history. Format responses using markdown where applicable.
+       ----------------
+        CONTEXT: {context}
+        ----------------
+        CHAT HISTORY: {chatHistory}
+        ----------------
+        QUESTION: {input}
+        ----------------
         If the answer is not provided in the context, the AI assistant will say, "I'm sorry, I don't know the answer".
-      `,
-      },
-    ]
+      `
+    };
+    // const formattedPreviousMessages = messages.slice(0, -1).map(formatMessage);
+
+    // const prompt = PromptTemplate.fromTemplate(Template.content);
+
+    // const outputParser = new BytesOutputParser();
+
+    // const chain = prompt.pipe(bedrock).pipe(outputParser);
+
+    // const stream = chain.stream({
+    //   context: docContext,
+    //   chatHistory: formattedPreviousMessages.join('\n'),
+    //   input: latestMessage
+    // });
 
     bedrock.call(
-      [...ragPrompt, ...messages].map(m =>
+      [Template, ...messages].map(m =>
         m.role == 'user'
           ? new HumanMessage(m.content)
           : new AIMessage(m.content),
-    ), {}, [handlers]);
+      ),
+      {},
+      [handlers]
+    );
+
+    // console.log(resp)
 
     return new StreamingTextResponse(stream);
   } catch (e) {
