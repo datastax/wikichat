@@ -22,7 +22,10 @@ const Configure = ({ isOpen, onClose, useRag, llm, similarityMetric, setConfigur
 
   const llmOptions = [
     { label: 'AI21 Labs: Jurassic-2 Mid', value: 'ai21.j2-mid-v1' },
-    { label: 'AI21 Labs: Jurassic-2 Ultra', value: 'ai21.j2-ultra-v1' }
+    { label: 'AI21 Labs: Jurassic-2 Ultra', value: 'ai21.j2-ultra-v1' },
+    { label: 'Cohere: Command', value: 'cohere.command-text-v14' },
+    { label: 'Cohere: Command Light', value: 'cohere.command-light-text-v14' },
+    { label: 'Meta: Llama 2 Chat', value: 'meta.llama2-13b-chat-v1' },
   ];
 
   const similarityMetricOptions = [
