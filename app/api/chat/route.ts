@@ -70,7 +70,7 @@ export async function POST(req: Request) {
     }
     const Template = {
       role: 'system',
-      content: `You are an AI assistant answering questions about Cassandra and Astra DB using the context and chat history. Format responses using markdown where applicable.
+      content: `You are an AI assistant answering questions about anything from Wikipedia the context will provide you with the most relevant page data. Format responses using markdown where applicable and don't return images.
        ----------------
         CONTEXT: {context}
         ----------------
