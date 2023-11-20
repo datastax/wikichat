@@ -6,6 +6,8 @@ import { BytesOutputParser } from 'langchain/schema/output_parser';
 import { PromptTemplate } from 'langchain/prompts';
 import { LangChainStream, StreamingTextResponse, Message as VercelChatMessage,} from 'ai';
 import {AstraDB} from "@datastax/astra-db-ts";
+import { RunnablePassthrough, RunnableSequence } from "langchain/dist/schema/runnable";
+import { StringOutputParser } from "langchain/schema/output_parser";
 
 const {
   ASTRA_DB_APPLICATION_TOKEN,
@@ -48,7 +50,6 @@ export async function POST(req: Request) {
       },
       model: llm,
       streaming: true,
-      // callbacks: [handlers]
     });
 
     let docContext = '';
@@ -65,6 +66,10 @@ export async function POST(req: Request) {
       });
       
       const documents = await cursor.toArray();
+
+      console.log(
+        documents.map(doc => doc.content)
+      )
       
       docContext = `${documents?.map(doc => doc.content).join("\n")}`
     }
@@ -72,18 +77,16 @@ export async function POST(req: Request) {
       role: 'system',
       content: `You are an AI assistant answering questions about anything from Wikipedia the context will provide you with the most relevant page data. Format responses using markdown where applicable and don't return images.
        ----------------
-        CONTEXT: {context}
+        CONTEXT: ${docContext}
         ----------------
-        CHAT HISTORY: {chatHistory}
-        ----------------
-        QUESTION: {input}
+        QUESTION: ${latestMessage}
         ----------------
         If the answer is not provided in the context, the AI assistant will say, "I'm sorry, I don't know the answer".
       `
     };
     // const formattedPreviousMessages = messages.slice(0, -1).map(formatMessage);
 
-    // const prompt = PromptTemplate.fromTemplate(Template.content);
+    // const promptTemplate = PromptTemplate.fromTemplate(Template.content);
 
     // const outputParser = new BytesOutputParser();
 
@@ -93,6 +96,22 @@ export async function POST(req: Request) {
     //   context: docContext,
     //   chatHistory: formattedPreviousMessages.join('\n'),
     //   input: latestMessage
+    // });
+
+    // const chain = RunnableSequence.from([
+    //   {
+    //     context:RunnablePassthrough.assign(() => ) docContext,
+    //     input: latestMessage,
+    //     chatHistory: messages.slice(0, -1).map(formatMessage).join('\n'),
+    //   },
+    //   prompt,
+    //   bedrock,
+    //   new StringOutputParser(),
+    // ])
+
+    // const formattedPrompt = promptTemplate.format({
+    //   context: docContext,
+    //   input: latestMessage,
     // });
 
     bedrock.call(
