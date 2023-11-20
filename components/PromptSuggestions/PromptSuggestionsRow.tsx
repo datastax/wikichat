@@ -2,16 +2,16 @@ import PromptSuggestionButton from "./PromptSuggestionButton";
 
 const PromptSuggestionRow = ({ onPromptClick }) => {
   const prompts = [
-    { id: 1, text: 'How do I generate a token?' },
-    { id: 2, text: 'What is a secure connect bundle?' },
-    { id: 3, text: 'Overview of Astra DB security features' },
-    // Add more prompts as needed
+    'How do I generate a token?',
+    'What is a secure connect bundle?',
+    'Overview of Astra DB security features',
+    'How do I create a database?',
   ];
 
   return (
-    <div className="flex flex-row justify-start items-center p-4">
-      {prompts.map((prompt) => (
-        <PromptSuggestionButton key={prompt.id} text={prompt.text} onClick={() => onPromptClick(prompt.text)} />
+    <div className="flex flex-row flex-wrap justify-start items-center py-4 gap-2">
+      {prompts.map((prompt, index) => (
+        <PromptSuggestionButton key={`suggestion-${index}`} text={prompt} onClick={() => onPromptClick(prompt)} />
       ))}
     </div>
   );
