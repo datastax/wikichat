@@ -41,6 +41,7 @@ export async function POST(req: Request) {
 
     console.log(llm)
     const latestMessage = messages[messages?.length - 1]?.content;
+
     const { stream, handlers, } = LangChainStream();
     const bedrock = new BedrockChat({
       region: BEDROCK_AWS_REGION,
@@ -48,6 +49,7 @@ export async function POST(req: Request) {
         accessKeyId: BEDROCK_AWS_ACCESS_KEY_ID,
         secretAccessKey: BEDROCK_AWS_SECRET_ACCESS_KEY,
       },
+      maxTokens: 1000,
       model: llm,
       streaming: true,
     });
@@ -66,10 +68,6 @@ export async function POST(req: Request) {
       });
       
       const documents = await cursor.toArray();
-
-      console.log(
-        documents.map(doc => doc.content)
-      )
       
       docContext = `${documents?.map(doc => doc.content).join("\n")}`
     }
@@ -123,8 +121,6 @@ export async function POST(req: Request) {
       {},
       [handlers]
     );
-
-    // console.log(resp)
 
     return new StreamingTextResponse(stream);
   } catch (e) {
