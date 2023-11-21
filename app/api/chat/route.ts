@@ -71,14 +71,16 @@ export async function POST(req: Request) {
     }
     const Template = {
       role: 'system',
-      content: `You are an AI assistant answering questions about anything from Wikipedia the context will provide you with the most relevant page data. Format responses using markdown where applicable and don't return images.
-       ----------------
-        CONTEXT: ${docContext}
+      content: `You are an AI assistant answering questions about anything from Wikipedia the context will provide you with the most relevant page data.
+        Refer to the context as wikipedia data. Format responses using markdown where applicable and don't return images.
+        ----------------
+        Wikipedia: ${docContext}
         ----------------
         QUESTION: ${latestMessage}
         ----------------
         If the answer is not provided in the context, the AI assistant will say, "I'm sorry, I don't know the answer".
-      `
+        Don't make note of how the answer was obtained and if referencing the text/context refer to it as Wikipedia.      
+        `
     };
     // const formattedPreviousMessages = messages.slice(0, -1).map(formatMessage);
 

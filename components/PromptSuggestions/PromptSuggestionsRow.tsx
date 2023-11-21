@@ -2,10 +2,10 @@ import PromptSuggestionButton from "./PromptSuggestionButton";
 
 const PromptSuggestionRow = ({ onPromptClick }) => {
   const prompts = [
-    'How do I generate a token?',
-    'What is a secure connect bundle?',
-    'Overview of Astra DB security features',
-    'How do I create a database?',
+    'What is happening with Sam Altman and OpenAI?',
+    'What is there to do at AWS re:Invent?',
+    'What happened in the Las Vegas Grand Prix',
+    "Why was Michigan's coach suspended?",
   ];
 
   return (
