@@ -220,12 +220,3 @@ body {
 .vercel-link hr {
   border-color: var(--border-primary);
 }
-
-.hide-scroll-bar {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
-}
-
-.hide-scroll-bar::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera*/
-}
