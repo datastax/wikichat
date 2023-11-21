@@ -38,8 +38,6 @@ const formatMessage = (message: VercelChatMessage) => {
 export async function POST(req: Request) {
   try {
     const {messages, useRag, llm, similarityMetric} = await req.json();
-
-    console.log(llm)
     const latestMessage = messages[messages?.length - 1]?.content;
 
     const { stream, handlers, } = LangChainStream();
