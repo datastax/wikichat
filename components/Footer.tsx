@@ -2,15 +2,6 @@
 const Footer = () => {
   return (
     <footer className="chatbot-text-tertiary flex justify-between text-sm mt-6">
-      <a
-        className=" vercel-link flex h-8 w-max flex-none items-center justify-center border rounded-md text-xs"
-        aria-label="Deploy on Vercel"
-        href="https://vercel.com/new/clone?repository-url=https://github.com/datastax/aws-bedrock-starter&env=ASTRA_DB_NAMESPACE,OPENAI_API_KEY,ASTRA_DB_ID,ASTRA_DB_REGION,ASTRA_DB_APPLICATION_TOKEN"
-      >
-        <span className="px-3">▲</span>
-        <hr className="h-full border-r" />
-        <span className="px-3">Deploy</span>
-      </a>
       <div className="ml-auto flex flex-row items-center">
         <span className="mr-1">Powered by</span>
         <svg aria-label="DataStax logotype" width="87" height="9" viewBox="0 0 87 9" fill="none" xmlns="http://www.w3.org/2000/svg">
