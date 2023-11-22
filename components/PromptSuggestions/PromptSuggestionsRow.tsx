@@ -4,7 +4,7 @@ const PromptSuggestionRow = ({ onPromptClick }) => {
   const prompts = [
     'What is happening with Sam Altman and OpenAI?',
     'What is there to do at AWS re:Invent?',
-    'What happened in the Las Vegas Grand Prix',
+    'What happened in the 2023 Las Vegas Grand Prix?',
     "Why was Michigan's coach suspended?",
   ];
 

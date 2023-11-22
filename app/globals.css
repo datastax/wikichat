@@ -220,3 +220,27 @@ body {
 .vercel-link hr {
   border-color: var(--border-primary);
 }
+
+.source-link {
+  position: absolute;
+  bottom: -2rem;
+  right: 0;
+  display: flex;
+  align-items: center;
+}
+
+.source-link svg {
+  position: static;
+  transform: none;
+  margin-right: 8px;
+}
+
+.source-link a {
+  display: flex;
+  align-items: center;
+  color: var(--text-primary-main);
+  border: 1px solid var(--border-primary);
+  border-radius: 24px;
+  padding: 0 8px;
+  margin-left: 8px;
+}
