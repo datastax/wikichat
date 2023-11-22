@@ -58,7 +58,7 @@ export default function Home() {
           <p className="chatbot-text-secondary-inverse text-sm md:text-base mt-2 md:mt-4">Chatting with WikiChat is a breeze! Simply type your questions or requests in a clear and concise manner. Responses are sourced from a real-time Wikipedia feed and a link for further reading is provided.</p>
         </div>
         <div className='flex-1 relative overflow-y-auto my-4 md:my-6'>
-          <div className='absolute w-full overflow-x-hidden'>
+          <div className='absolute w-full h-full overflow-x-hidden'>
             {messages.map((message, index) => <Bubble ref={messagesEndRef} key={`message-${index}`} content={message} />)}
           </div>
         </div>

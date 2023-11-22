@@ -1,13 +1,9 @@
 import { BedrockEmbeddings } from "langchain/embeddings/bedrock";
 import { BedrockChat } from "langchain/chat_models/bedrock/web";
-import { ConversationalRetrievalQAChain } from "langchain/chains";
 import { AIMessage, HumanMessage } from "langchain/schema";
-import { BytesOutputParser } from 'langchain/schema/output_parser';
-import { PromptTemplate } from 'langchain/prompts';
 import { LangChainStream, StreamingTextResponse, Message as VercelChatMessage,} from 'ai';
 import {AstraDB} from "@datastax/astra-db-ts";
-import { RunnablePassthrough, RunnableSequence } from "langchain/dist/schema/runnable";
-import { StringOutputParser } from "langchain/schema/output_parser";
+
 
 const {
   ASTRA_DB_APPLICATION_TOKEN,
@@ -66,51 +62,26 @@ export async function POST(req: Request) {
       });
       
       const documents = await cursor.toArray();
+
+      console.log(documents.map(doc => doc.url));
       
-      docContext = `${documents?.map(doc => doc.content).join("\n")}`
+      docContext = `${documents?.map(doc => { return {title: doc.title, url: doc.url, context: doc.content }}).join("\n")}`
     }
     const Template = {
       role: 'system',
-      content: `You are an AI assistant answering questions about anything from Wikipedia the context will provide you with the most relevant page data.
+      content: `You are an AI assistant answering questions about anything from Wikipedia the context will provide you with the most relevant page data along with the source pages title and url.
         Refer to the context as wikipedia data. Format responses using markdown where applicable and don't return images.
+        If the answer is not provided in the context, the AI assistant will say, "I'm sorry, I don't know the answer".
+        Don't make note of how the answer was obtained and if referencing the text/context refer to it as Wikipedia.
+        If you use Wikipedia data, add a link to the page at the end of the answer and underline it using markdown. Just provide the link no additional text.
+        Only provide links which come from the Wikipedia data.
         ----------------
         Wikipedia: ${docContext}
         ----------------
         QUESTION: ${latestMessage}
-        ----------------
-        If the answer is not provided in the context, the AI assistant will say, "I'm sorry, I don't know the answer".
-        Don't make note of how the answer was obtained and if referencing the text/context refer to it as Wikipedia.      
+        ----------------      
         `
     };
-    // const formattedPreviousMessages = messages.slice(0, -1).map(formatMessage);
-
-    // const promptTemplate = PromptTemplate.fromTemplate(Template.content);
-
-    // const outputParser = new BytesOutputParser();
-
-    // const chain = prompt.pipe(bedrock).pipe(outputParser);
-
-    // const stream = chain.stream({
-    //   context: docContext,
-    //   chatHistory: formattedPreviousMessages.join('\n'),
-    //   input: latestMessage
-    // });
-
-    // const chain = RunnableSequence.from([
-    //   {
-    //     context:RunnablePassthrough.assign(() => ) docContext,
-    //     input: latestMessage,
-    //     chatHistory: messages.slice(0, -1).map(formatMessage).join('\n'),
-    //   },
-    //   prompt,
-    //   bedrock,
-    //   new StringOutputParser(),
-    // ])
-
-    // const formattedPrompt = promptTemplate.format({
-    //   context: docContext,
-    //   input: latestMessage,
-    // });
 
     bedrock.call(
       [Template, ...messages].map(m =>
