@@ -52,20 +52,23 @@ export async function POST(req: Request) {
     if (useRag) {
       const embedded = await embeddings.embedQuery(latestMessage);
 
-      const collection = await astraDb.collection(ASTRA_DB_COLLECTION);
+      try {
+        const collection = await astraDb.collection(ASTRA_DB_COLLECTION);
 
-      const cursor= collection.find(null, {
-        sort: {
-          $vector: embedded,
-        },
-        limit: 5,
-      });
-      
-      const documents = await cursor.toArray();
+        const cursor= collection.find(null, {
+          sort: {
+            $vector: embedded,
+          },
+          limit: 5,
+        });
 
-      console.log(documents.map(doc => doc.url));
-      
-      docContext = `${documents?.map(doc => { return {title: doc.title, url: doc.url, context: doc.content }}).join("\n")}`
+        const documents = await cursor.toArray();
+
+        docContext = `${documents?.map(doc => { return {title: doc.title, url: doc.url, context: doc.content }}).join("\n")}`
+      } catch (e) {
+        console.log("Error querying db...");
+        docContext = "";
+      }
     }
     const Template = {
       role: 'system',
