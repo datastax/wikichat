@@ -1,7 +1,7 @@
 import { BedrockEmbeddings } from "langchain/embeddings/bedrock";
 import { BedrockChat } from "langchain/chat_models/bedrock/web";
 import { AIMessage, HumanMessage } from "langchain/schema";
-import { LangChainStream, StreamingTextResponse, Message as VercelChatMessage,} from 'ai';
+import { LangChainStream, StreamingTextResponse, Message as VercelChatMessage} from "ai";
 import {AstraDB} from "@datastax/astra-db-ts";
 
 
@@ -26,6 +26,7 @@ const embeddings = new BedrockEmbeddings({
 });
 
 const astraDb = new AstraDB(ASTRA_DB_APPLICATION_TOKEN, ASTRA_DB_ID, ASTRA_DB_REGION, ASTRA_DB_NAMESPACE);
+const collection = await astraDb.collection(ASTRA_DB_COLLECTION);
 
 const formatMessage = (message: VercelChatMessage) => {
   return `${message.role}: ${message.content}`;
@@ -53,8 +54,6 @@ export async function POST(req: Request) {
       const embedded = await embeddings.embedQuery(latestMessage);
 
       try {
-        const collection = await astraDb.collection(ASTRA_DB_COLLECTION);
-
         const cursor= collection.find(null, {
           sort: {
             $vector: embedded,
@@ -63,7 +62,6 @@ export async function POST(req: Request) {
         });
 
         const documents = await cursor.toArray();
-
         docContext = `${documents?.map(doc => { return {title: doc.title, url: doc.url, context: doc.content }}).join("\n")}`
       } catch (e) {
         console.log("Error querying db...");
@@ -95,7 +93,6 @@ export async function POST(req: Request) {
       {},
       [handlers]
     );
-
     return new StreamingTextResponse(stream);
   } catch (e) {
     throw e;
