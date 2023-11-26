@@ -26,7 +26,6 @@ const embeddings = new BedrockEmbeddings({
 });
 
 const astraDb = new AstraDB(ASTRA_DB_APPLICATION_TOKEN, ASTRA_DB_ID, ASTRA_DB_REGION, ASTRA_DB_NAMESPACE);
-const collection = await astraDb.collection(ASTRA_DB_COLLECTION);
 
 const formatMessage = (message: VercelChatMessage) => {
   return `${message.role}: ${message.content}`;
@@ -54,7 +53,8 @@ export async function POST(req: Request) {
       const embedded = await embeddings.embedQuery(latestMessage);
 
       try {
-        const cursor= collection.find(null, {
+        const collection = await astraDb.collection(ASTRA_DB_COLLECTION);
+        const cursor = collection.find(null, {
           sort: {
             $vector: embedded,
           },
