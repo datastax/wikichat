@@ -63,6 +63,7 @@ export async function POST(req: Request) {
 
         const documents = await cursor.toArray();
         docContext = `${documents?.map(doc => { return {title: doc.title, url: doc.url, context: doc.content }}).join("\n")}`
+        console.log(docContext);
       } catch (e) {
         console.log("Error querying db...");
         docContext = "";
