@@ -1,6 +1,6 @@
 import { BedrockEmbeddings } from "langchain/embeddings/bedrock";
 import { BedrockChat } from "langchain/chat_models/bedrock/web";
-import { AIMessage, HumanMessage } from "langchain/schema";
+import { AIMessage, HumanMessage, SystemMessage } from "langchain/schema";
 import { LangChainStream, StreamingTextResponse, Message as VercelChatMessage} from "ai";
 import {AstraDB} from "@datastax/astra-db-ts";
 
@@ -92,9 +92,10 @@ export async function POST(req: Request) {
       [Template, ...messages].map(m =>
         m.role == 'user'
           ? new HumanMessage(m.content)
+          : m.role == 'system' ? new SystemMessage(m.content)
           : new AIMessage(m.content),
       ),
-      {},
+      { stop: ['Human: ']},
       [handlers]
     );
     return new StreamingTextResponse(stream);
