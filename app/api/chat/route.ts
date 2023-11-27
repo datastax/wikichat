@@ -62,13 +62,13 @@ export async function POST(req: Request) {
         });
 
         const documents = await cursor.toArray();
-        docContext = `${documents?.map(doc => { return {title: doc.title, url: doc.url, context: doc.content }}).join("\n")}`
-        console.log(docContext);
+        docContext = JSON.stringify(documents?.map(doc => { return {title: doc.title, url: doc.url, context: doc.content }}));
       } catch (e) {
         console.log("Error querying db...");
         docContext = "";
       }
     }
+
     const Template = {
       role: 'system',
       content: `You are an AI assistant answering questions about anything from Wikipedia the context will provide you with the most relevant page data along with the source pages title and url.
