@@ -58,10 +58,12 @@ export async function POST(req: Request) {
           sort: {
             $vector: embedded,
           },
-          limit: 5,
+          limit: 3,
         });
 
         const documents = await cursor.toArray();
+
+
         docContext = JSON.stringify(documents?.map(doc => { return {title: doc.title, url: doc.url, context: doc.content }}));
       } catch (e) {
         console.log("Error querying db...");
@@ -74,6 +76,7 @@ export async function POST(req: Request) {
       content: `You are an AI assistant answering questions about anything from Wikipedia the context will provide you with the most relevant page data along with the source pages title and url.
         Refer to the context as wikipedia data. Format responses using markdown where applicable and don't return images.
         If the answer is not provided in the context, the AI assistant will say, "I'm sorry, I don't know the answer".
+        Prioritize the most recent news when answering questions.
         Don't make note of how the answer was obtained and if referencing the text/context refer to it as Wikipedia.
         If you use Wikipedia data, add a link to the page at the end of the answer and underline it using markdown. Just provide the link no additional text.
         Only provide links which come from the Wikipedia data.
