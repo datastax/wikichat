@@ -43,7 +43,7 @@ export async function POST(req: Request) {
         accessKeyId: BEDROCK_AWS_ACCESS_KEY_ID,
         secretAccessKey: BEDROCK_AWS_SECRET_ACCESS_KEY,
       },
-      maxTokens: 1000,
+      maxTokens: 2048,
       model: llm,
       streaming: true,
     });
