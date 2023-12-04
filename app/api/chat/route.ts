@@ -1,7 +1,8 @@
 import { BedrockEmbeddings } from "langchain/embeddings/bedrock";
 import { BedrockChat } from "langchain/chat_models/bedrock/web";
 import { AIMessage, HumanMessage, SystemMessage } from "langchain/schema";
-import { LangChainStream, StreamingTextResponse, Message as VercelChatMessage} from "ai";
+import OpenAI from 'openai';
+import { OpenAIStream, StreamingTextResponse, Message as VercelChatMessage} from "ai";
 import {AstraDB} from "@datastax/astra-db-ts";
 
 
@@ -25,6 +26,10 @@ const embeddings = new BedrockEmbeddings({
   model: "amazon.titan-embed-text-v1"
 });
 
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
 const astraDb = new AstraDB(ASTRA_DB_APPLICATION_TOKEN, ASTRA_DB_ID, ASTRA_DB_REGION, ASTRA_DB_NAMESPACE);
 
 const formatMessage = (message: VercelChatMessage) => {
@@ -36,17 +41,17 @@ export async function POST(req: Request) {
     const {messages, useRag, llm, similarityMetric} = await req.json();
     const latestMessage = messages[messages?.length - 1]?.content;
 
-    const { stream, handlers, } = LangChainStream();
-    const bedrock = new BedrockChat({
-      region: BEDROCK_AWS_REGION,
-      credentials: {
-        accessKeyId: BEDROCK_AWS_ACCESS_KEY_ID,
-        secretAccessKey: BEDROCK_AWS_SECRET_ACCESS_KEY,
-      },
-      maxTokens: 2048,
-      model: llm,
-      streaming: true,
-    });
+    // const { stream, handlers, } = LangChainStream();
+    // const bedrock = new BedrockChat({
+    //   region: BEDROCK_AWS_REGION,
+    //   credentials: {
+    //     accessKeyId: BEDROCK_AWS_ACCESS_KEY_ID,
+    //     secretAccessKey: BEDROCK_AWS_SECRET_ACCESS_KEY,
+    //   },
+    //   maxTokens: 2048,
+    //   model: llm,
+    //   streaming: true,
+    // });
 
     let docContext = '';
     if (useRag) {
@@ -63,6 +68,7 @@ export async function POST(req: Request) {
 
         const documents = await cursor.toArray();
 
+        console.log(documents.map(doc => doc.url))
 
         docContext = JSON.stringify(documents?.map(doc => { return {title: doc.title, url: doc.url, context: doc.content }}));
       } catch (e) {
@@ -75,29 +81,38 @@ export async function POST(req: Request) {
       role: 'system',
       content: `You are an AI assistant answering questions about anything from Wikipedia the context will provide you with the most relevant page data along with the source pages title and url.
         Refer to the context as wikipedia data. Format responses using markdown where applicable and don't return images.
-        If the answer is not provided in the context, the AI assistant will say, "I'm sorry, I don't know the answer".
-        Prioritize the most recent news when answering questions.
-        Don't make note of how the answer was obtained and if referencing the text/context refer to it as Wikipedia.
-        If you use Wikipedia data, add a link to the page at the end of the answer and underline it using markdown. Just provide the link no additional text.
-        Only provide links which come from the Wikipedia data.
+        If referencing the text/context refer to it as Wikipedia.
+        At the end of the response add a link to the Wikipedia data url most of your information came from, refer to this source as "the source below".
         ----------------
-        Wikipedia: ${docContext}
+        START CONTEXT
+        ${docContext}
+        END CONTEXT
         ----------------
         QUESTION: ${latestMessage}
         ----------------      
         `
     };
 
-    bedrock.call(
-      [Template, ...messages].map(m =>
-        m.role == 'user'
-          ? new HumanMessage(m.content)
-          : m.role == 'system' ? new SystemMessage(m.content)
-          : new AIMessage(m.content),
-      ),
-      { stop: ['Human: ']},
-      [handlers]
+    // bedrock.call(
+    //   [Template, ...messages].map(m =>
+    //     m.role == 'user'
+    //       ? new HumanMessage(m.content)
+    //       : m.role == 'system' ? new SystemMessage(m.content)
+    //       : new AIMessage(m.content),
+    //   ),
+    //   { stop: ['Human: ']},
+    //   [handlers]
+    // );
+
+    const response = await openai.chat.completions.create(
+      {
+        model: llm ?? 'gpt-4',
+        stream: true,
+        messages: [Template, ...messages],
+      }
     );
+    const stream = OpenAIStream(response);
+
     return new StreamingTextResponse(stream);
   } catch (e) {
     throw e;
