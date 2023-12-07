@@ -2,10 +2,10 @@ import PromptSuggestionButton from "./PromptSuggestionButton";
 
 const PromptSuggestionRow = ({ onPromptClick }) => {
   const prompts = [
-    'What is happening with Sam Altman and OpenAI?',
-    'Tell me about the MSG Sphere at the Venetian',
-    'What happened in the 2023 Las Vegas Grand Prix?',
-    "Why was Michigan's Football coach suspended?",
+    "Who is the 2023 Time's Person of the Year?",
+    'Where does Messi play and how much does he make?',
+    'When was Twitter renamed to X?',
+    "What is the status of the next Star Wars films?",
   ];
 
   return (
