@@ -5,7 +5,7 @@ This project is a starter for creating a chatbot using Astra DB and AWS Bedrock.
 ## Features
 
 - **Astra DB Integration**: Store and retrieve data from your Astra DB database with ease.
-- **AWS Redrock Integration**: Leverage the power of OpenAI to generate intelligent responses.
+- **AWS Bedrock Integration**: Leverage the power of OpenAI to generate intelligent responses.
 - **Easy Deployment**: Deploy your chatbot to Vercel with just a few clicks.
 - **Customizable**: Modify and extend the chatbot to suit your needs.
 
