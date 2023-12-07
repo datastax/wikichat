@@ -55,7 +55,18 @@ export default function Home() {
               </button>
             </div>
           </div>
-          <p className="chatbot-text-secondary-inverse text-sm md:text-base mt-2 md:mt-4">Chatting with WikiChat is a breeze! Simply type your questions or requests in a clear and concise manner. Responses are sourced from a real-time Wikipedia feed and a link for further reading is provided.</p>
+          <p className="chatbot-text-secondary-inverse text-sm md:text-base mt-2 md:mt-4">
+            Chatting with WikiChat is a breeze! Simply type your questions or requests in a clear and concise manner. Responses are sourced from{' '}
+            <a
+              className='link'
+              href="https://en.wikipedia.org/wiki/Wikipedia:Popular_pages#Top-100_list"
+              rel="noreferrer noopener"
+              target="_blank"
+            >
+              Wikipedia&apos;s most popular pages
+            </a>
+            {' '}and a link to further reading is provided.
+          </p>
         </div>
         <div className='flex-1 relative overflow-y-auto my-4 md:my-6'>
           <div className='absolute w-full h-full overflow-x-hidden'>

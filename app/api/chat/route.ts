@@ -76,11 +76,13 @@ export async function POST(req: Request) {
           sort: {
             $vector: embedded?.embeddings[0],
           },
-          limit: 3,
+          limit: 5,
         });
 
         const documents = await cursor.toArray();
         const docsMap = documents?.map(doc => { return {title: doc.title, url: doc.url, context: doc.content }});
+
+        console.log(docsMap);
 
         docContext = JSON.stringify(docsMap);
       } catch (e) {
@@ -94,7 +96,8 @@ export async function POST(req: Request) {
       content: `You are an AI assistant answering questions about anything from Wikipedia the context will provide you with the most relevant page data along with the source pages title and url.
         Refer to the context as wikipedia data. Format responses using markdown where applicable and don't return images.
         If referencing the text/context refer to it as Wikipedia.
-        At the end of the response add a link to the Wikipedia data url most of your information came from, refer to this source as "the source below".
+        At the end of the response on a line by itself add a markdown link to the Wikipedia url where the most relevant data was found label it with the title of the wikipedia page and no "Source:" or "Wikipedia" prefix or other text.
+        Refer to this source as "the source below".
         ----------------
         START CONTEXT
         ${docContext}

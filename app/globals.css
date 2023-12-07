@@ -244,3 +244,7 @@ body {
   padding: 0 8px;
   margin-left: 8px;
 }
+
+.link {
+  color: var(--text-primary-main);
+}
