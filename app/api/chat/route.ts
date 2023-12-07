@@ -1,10 +1,11 @@
 import { BedrockEmbeddings } from "langchain/embeddings/bedrock";
 import { BedrockChat } from "langchain/chat_models/bedrock/web";
 import { AIMessage, HumanMessage, SystemMessage } from "langchain/schema";
+import { CohereClient } from "cohere-ai";
+
 import OpenAI from 'openai';
 import { OpenAIStream, StreamingTextResponse, Message as VercelChatMessage} from "ai";
 import {AstraDB} from "@datastax/astra-db-ts";
-
 
 const {
   ASTRA_DB_APPLICATION_TOKEN,
@@ -15,7 +16,13 @@ const {
   BEDROCK_AWS_REGION,
   BEDROCK_AWS_ACCESS_KEY_ID,
   BEDROCK_AWS_SECRET_ACCESS_KEY,
+  COHERE_API_KEY,
 } = process.env;
+
+const cohere = new CohereClient({
+  token: COHERE_API_KEY,
+});
+
 
 const embeddings = new BedrockEmbeddings({
   region: BEDROCK_AWS_REGION,
@@ -55,22 +62,27 @@ export async function POST(req: Request) {
 
     let docContext = '';
     if (useRag) {
-      const embedded = await embeddings.embedQuery(latestMessage);
+      // const embedded = await embeddings.embedQuery(latestMessage);
+
+      const embedded = await cohere.embed({
+        texts: [latestMessage],
+        model: "embed-english-light-v3.0",
+        inputType: "search_query",
+      });
 
       try {
         const collection = await astraDb.collection(ASTRA_DB_COLLECTION);
         const cursor = collection.find(null, {
           sort: {
-            $vector: embedded,
+            $vector: embedded?.embeddings[0],
           },
           limit: 3,
         });
 
         const documents = await cursor.toArray();
+        const docsMap = documents?.map(doc => { return {title: doc.title, url: doc.url, context: doc.content }});
 
-        console.log(documents.map(doc => doc.url))
-
-        docContext = JSON.stringify(documents?.map(doc => { return {title: doc.title, url: doc.url, context: doc.content }}));
+        docContext = JSON.stringify(docsMap);
       } catch (e) {
         console.log("Error querying db...");
         docContext = "";
