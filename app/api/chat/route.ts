@@ -6,6 +6,7 @@ import { CohereClient } from "cohere-ai";
 import OpenAI from 'openai';
 import { OpenAIStream, StreamingTextResponse, Message as VercelChatMessage} from "ai";
 import {AstraDB} from "@datastax/astra-db-ts";
+import Bugsnag from '@bugsnag/js';
 
 const {
   ASTRA_DB_APPLICATION_TOKEN,
@@ -17,7 +18,12 @@ const {
   BEDROCK_AWS_ACCESS_KEY_ID,
   BEDROCK_AWS_SECRET_ACCESS_KEY,
   COHERE_API_KEY,
+  BUGSNAG_API_KEY,
 } = process.env;
+
+if (BUGSNAG_API_KEY) {
+  Bugsnag.start({ apiKey: BUGSNAG_API_KEY })
+}
 
 const cohere = new CohereClient({
   token: COHERE_API_KEY,
@@ -86,6 +92,13 @@ export async function POST(req: Request) {
 
         docContext = JSON.stringify(docsMap);
       } catch (e) {
+        if (BUGSNAG_API_KEY) {
+          Bugsnag.notify(e, event => {
+            event.addMetadata("chat", {
+              latestMessage,
+            })
+          });
+        }
         console.log("Error querying db...");
         docContext = "";
       }
