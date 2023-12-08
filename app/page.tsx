@@ -1,17 +1,28 @@
 "use client";
-import {useEffect, useRef, useState} from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Bubble from '../components/Bubble'
-import { useChat } from 'ai/react';
+import { useChat, useCompletion } from 'ai/react';
 import Footer from '../components/Footer';
 import Configure from '../components/Configure';
 import ThemeButton from '../components/ThemeButton';
 import useConfiguration from './hooks/useConfiguration';
 import PromptSuggestionRow from '../components/PromptSuggestions/PromptSuggestionsRow';
 import { Message } from 'ai';
-import { randomUUID } from 'crypto';
 
 export default function Home() {
+  const [suggestions, setSuggestions] = useState([]);
   const { append, messages, input, handleInputChange, handleSubmit } = useChat();
+  const { complete } = useCompletion({
+    onFinish: (prompt, completion) => {
+      if (Array.isArray(completion)) {
+        setSuggestions(completion);
+      } else {
+        const cleanCompletion = completion.replace(/\[|\]/g, '').trim();
+        const suggestionsArr = cleanCompletion.split('\n').map(item => item.replace(/^\d+\.\s*"([^"]+)"$/, '$1').trim());
+        setSuggestions(suggestionsArr);
+      }
+    }
+  });
   const { useRag, llm, similarityMetric, setConfiguration } = useConfiguration();
 
   const messagesEndRef = useRef(null);
@@ -20,6 +31,10 @@ export default function Home() {
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
+
+  useEffect(() => {
+    complete('')
+  }, []);
 
   useEffect(() => {
     scrollToBottom();
@@ -74,7 +89,7 @@ export default function Home() {
           </div>
         </div>
         {!messages || messages.length === 0 && (
-          <PromptSuggestionRow onPromptClick={handlePrompt} />
+          <PromptSuggestionRow prompts={suggestions} onPromptClick={handlePrompt} />
         )}
         <form className='flex h-[40px] gap-2' onSubmit={handleSend}>
           <input onChange={handleInputChange} value={input} className='chatbot-input flex-1 text-sm md:text-base outline-none bg-transparent rounded-md p-2' placeholder='Send a message...' />
