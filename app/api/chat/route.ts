@@ -92,11 +92,13 @@ export async function POST(req: Request) {
 
         docContext = JSON.stringify(docsMap);
       } catch (e) {
-        Bugsnag.notify(e, event => {
-          event.addMetadata("chat", {
-            latestMessage,
-          })
-        })
+        if (BUGSNAG_API_KEY) {
+          Bugsnag.notify(e, event => {
+            event.addMetadata("chat", {
+              latestMessage,
+            })
+          });
+        }
         console.log("Error querying db...");
         docContext = "";
       }
