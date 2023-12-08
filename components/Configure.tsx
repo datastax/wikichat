@@ -70,13 +70,13 @@ const Configure = ({ isOpen, onClose, useRag, llm, similarityMetric, setConfigur
             />
             <Toggle enabled={rag} label="Enable vector content (RAG)" onChange={() => setRag(!rag)} />
           </div>
-          <Dropdown
+          {/* <Dropdown
             fieldId="similarityMetric"
             label="Similarity Metric"
             options={similarityMetricOptions}
             value={selectedSimilarityMetric}
             onSelect={setSelectedSimilarityMetric}
-          />
+          /> */}
         </div>
         <div className="self-end w-full">
           <div className="flex justify-end gap-2">

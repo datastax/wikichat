@@ -6,10 +6,10 @@ export type SimilarityMetric = "cosine" | "euclidean" | "dot_product";
 
 const useConfiguration = () => {
   // Safely get values from localStorage
-  const getLocalStorageValue = (key: string, defaultValue: any) => {
+  const getLocalStorageValue = (key: string, defaultValue: any, bannedValues?: string[]) => {
     if (typeof window !== 'undefined') {
       const storedValue = localStorage.getItem(key);
-      if (storedValue !== null) {
+      if (storedValue !== null && bannedValues?.includes(storedValue) === false) {
         return storedValue;
       }
     }
@@ -17,7 +17,7 @@ const useConfiguration = () => {
   };
 
   const [useRag, setUseRag] = useState<boolean>(() => getLocalStorageValue('useRag', 'true') === 'true');
-  const [llm, setLlm] = useState<string>(() => getLocalStorageValue('llm', 'meta.llama2-13b-chat-v1'));
+  const [llm, setLlm] = useState<string>(() => getLocalStorageValue('llm', 'gpt-4', ['meta.llama2-13b-chat-v1', 'ai21.j2-mid-v1', 'ai21.j2-ultra-v1']));
   const [similarityMetric, setSimilarityMetric] = useState<SimilarityMetric>(
     () => getLocalStorageValue('similarityMetric', 'cosine') as SimilarityMetric
   );

@@ -82,12 +82,12 @@ export async function POST(req: Request) {
       {
         model: 'gpt-3.5-turbo',
         stream: true,
-        temperature: 1,
+        temperature: 1.5,
         messages: [{
           role: 'user',
           content: `You are an assistant who creates sample question to ask a chatbot
           Given the context below of the most recently added data to the most popular pages on Wikipedia come up with 4 suggested questions to ask this chatbot
-          Make the suggested questions on a variety of topics and keep them to less than 15 words each
+          Make the suggested questions on a variety of topics, be as relevent as possible to current event, and keep them to less than 15 words each
 
           START CONTEXT
           ${docContext}

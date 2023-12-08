@@ -1,6 +1,3 @@
-import { BedrockEmbeddings } from "langchain/embeddings/bedrock";
-import { BedrockChat } from "langchain/chat_models/bedrock/web";
-import { AIMessage, HumanMessage, SystemMessage } from "langchain/schema";
 import { CohereClient } from "cohere-ai";
 
 import OpenAI from 'openai';
@@ -14,9 +11,6 @@ const {
   ASTRA_DB_REGION,
   ASTRA_DB_NAMESPACE,
   ASTRA_DB_COLLECTION,
-  BEDROCK_AWS_REGION,
-  BEDROCK_AWS_ACCESS_KEY_ID,
-  BEDROCK_AWS_SECRET_ACCESS_KEY,
   COHERE_API_KEY,
   BUGSNAG_API_KEY,
 } = process.env;
@@ -30,24 +24,11 @@ const cohere = new CohereClient({
 });
 
 
-const embeddings = new BedrockEmbeddings({
-  region: BEDROCK_AWS_REGION,
-  credentials: {
-    accessKeyId: BEDROCK_AWS_ACCESS_KEY_ID,
-    secretAccessKey: BEDROCK_AWS_SECRET_ACCESS_KEY,
-  },
-  model: "amazon.titan-embed-text-v1"
-});
-
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
 const astraDb = new AstraDB(ASTRA_DB_APPLICATION_TOKEN, ASTRA_DB_ID, ASTRA_DB_REGION, ASTRA_DB_NAMESPACE);
-
-const formatMessage = (message: VercelChatMessage) => {
-  return `${message.role}: ${message.content}`;
-};
 
 export async function POST(req: Request) {
   try {
@@ -94,7 +75,9 @@ export async function POST(req: Request) {
         Refer to the context as wikipedia data. Format responses using markdown where applicable and don't return images.
         If referencing the text/context refer to it as Wikipedia.
         At the end of the response on a line by itself add a markdown link to the Wikipedia url where the most relevant data was found label it with the title of the wikipedia page and no "Source:" or "Wikipedia" prefix or other text.
-        Refer to this source as "the source below".
+        The max links you should include is 1 refer to this source as "the source below".
+
+        if the context is empty anwser it to the best of your ability.
         ----------------
         START CONTEXT
         ${docContext}
@@ -104,17 +87,6 @@ export async function POST(req: Request) {
         ----------------      
         `
     };
-
-    // bedrock.call(
-    //   [Template, ...messages].map(m =>
-    //     m.role == 'user'
-    //       ? new HumanMessage(m.content)
-    //       : m.role == 'system' ? new SystemMessage(m.content)
-    //       : new AIMessage(m.content),
-    //   ),
-    //   { stop: ['Human: ']},
-    //   [handlers]
-    // );
 
     const response = await openai.chat.completions.create(
       {
