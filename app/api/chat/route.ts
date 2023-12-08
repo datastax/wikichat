@@ -54,22 +54,8 @@ export async function POST(req: Request) {
     const {messages, useRag, llm, similarityMetric} = await req.json();
     const latestMessage = messages[messages?.length - 1]?.content;
 
-    // const { stream, handlers, } = LangChainStream();
-    // const bedrock = new BedrockChat({
-    //   region: BEDROCK_AWS_REGION,
-    //   credentials: {
-    //     accessKeyId: BEDROCK_AWS_ACCESS_KEY_ID,
-    //     secretAccessKey: BEDROCK_AWS_SECRET_ACCESS_KEY,
-    //   },
-    //   maxTokens: 2048,
-    //   model: llm,
-    //   streaming: true,
-    // });
-
     let docContext = '';
     if (useRag) {
-      // const embedded = await embeddings.embedQuery(latestMessage);
-
       const embedded = await cohere.embed({
         texts: [latestMessage],
         model: "embed-english-light-v3.0",
@@ -87,8 +73,6 @@ export async function POST(req: Request) {
 
         const documents = await cursor.toArray();
         const docsMap = documents?.map(doc => { return {title: doc.title, url: doc.url, context: doc.content }});
-
-        console.log(docsMap);
 
         docContext = JSON.stringify(docsMap);
       } catch (e) {
