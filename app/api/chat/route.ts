@@ -143,6 +143,9 @@ export async function POST(req: Request) {
 
     return new StreamingTextResponse(stream);
   } catch (e) {
+    if (BUGSNAG_API_KEY) {
+      Bugsnag.notify(e);
+    }
     throw e;
   }
 }
