@@ -19,7 +19,7 @@ export default function Home() {
         setSuggestions(completion);
       } else {
         const cleanCompletion = completion.replace(/\[|\]/g, '').trim();
-        const suggestionsArr = cleanCompletion.split('\n').map(item => item.replace(/^\d+\.\s*"([^"]+)"$/, '$1').trim());
+        const suggestionsArr = cleanCompletion.split('\n').map(item => item.replace(/^\d+\.\s*"([^"]+)"$/, '$1').replace(/-/g, '').trim());
         const cleanArr = suggestionsArr.filter((value) => {
           return value.trim() !== "" && value.trim() !== "\n";
         });
