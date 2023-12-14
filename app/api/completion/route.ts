@@ -88,6 +88,7 @@ export async function POST(req: Request) {
           content: `You are an assistant who creates sample question to ask a chatbot
           Given the context below of the most recently added data to the most popular pages on Wikipedia come up with 4 suggested questions
           Make the suggested questions on a variety of topics, be as relevent as possible to today's date, and keep them to less than 15 words each
+          Do not number the questions.
 
           START CONTEXT
           ${docContext}
