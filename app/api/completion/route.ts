@@ -86,8 +86,8 @@ export async function POST(req: Request) {
         messages: [{
           role: 'user',
           content: `You are an assistant who creates sample question to ask a chatbot
-          Given the context below of the most recently added data to the most popular pages on Wikipedia come up with 4 suggested questions
-          Make the suggested questions on a variety of topics, be as relevent as possible to ${month} ${year}, and keep them to less than 12 words each
+          Given the context below of the most recently added data to the most popular pages on Wikipedia come up with 4 suggested questions do not number this list
+          Make the suggested questions on a variety of topics but avoid religion, be as relevent as possible to ${month} ${year}, and keep them to less than 12 words each
           Remove any numbers prefixing the questions.
 
           START CONTEXT
