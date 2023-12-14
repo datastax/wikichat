@@ -8,17 +8,18 @@ import ThemeButton from '../components/ThemeButton';
 import useConfiguration from './hooks/useConfiguration';
 import PromptSuggestionRow from '../components/PromptSuggestions/PromptSuggestionsRow';
 import { Message } from 'ai';
+import LoadingBubble from '../components/LoadingBubble';
 
 export default function Home() {
   const [suggestions, setSuggestions] = useState([]);
-  const { append, messages, input, handleInputChange, handleSubmit } = useChat();
+  const { append, messages, isLoading, input, handleInputChange, handleSubmit } = useChat();
   const { complete } = useCompletion({
     onFinish: (prompt, completion) => {
       if (Array.isArray(completion)) {
         setSuggestions(completion);
       } else {
         const cleanCompletion = completion.replace(/\[|\]/g, '').trim();
-        const suggestionsArr = cleanCompletion.split('\n').map(item => item.replace(/^\d+\.\s*"([^"]+)"$/, '$1').trim());
+        const suggestionsArr = cleanCompletion.split('\n').map(item => item.replace(/^\d+\.\s*"([^"]+)"$/, '$1').replace(/-/g, '').trim());
         const cleanArr = suggestionsArr.filter((value) => {
           return value.trim() !== "" && value.trim() !== "\n";
         });
@@ -89,6 +90,7 @@ export default function Home() {
         <div className='flex-1 relative overflow-y-auto my-4 md:my-6'>
           <div className='absolute w-full h-full overflow-x-hidden'>
             {messages.map((message, index) => <Bubble ref={messagesEndRef} key={`message-${index}`} content={message} />)}
+            {isLoading && <LoadingBubble ref={messagesEndRef} />}
           </div>
         </div>
         {!messages || messages.length === 0 && (
