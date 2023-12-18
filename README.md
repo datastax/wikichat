@@ -1,11 +1,10 @@
-# Amazon Bedrock Starter
+# Wikichat
 
-This project is a starter for creating a chatbot using Astra DB and AWS Bedrock. It's designed to be easy to deploy and use, with a focus on performance and usability.
+This project is a starter for creating a chatbot using Astra DB. It's designed to be easy to deploy and use, with a focus on performance and usability.
 
 ## Features
 
 - **Astra DB Integration**: Store and retrieve data from your Astra DB database with ease.
-- **AWS Bedrock Integration**: Leverage the power of OpenAI to generate intelligent responses.
 - **Easy Deployment**: Deploy your chatbot to Vercel with just a few clicks.
 - **Customizable**: Modify and extend the chatbot to suit your needs.
 
@@ -15,7 +14,6 @@ This project is a starter for creating a chatbot using Astra DB and AWS Bedrock.
 
 - An Astra DB account. You can [create one here](https://astra.datastax.com/register).
     - An Astra Vector Database
-- An Amazon Bedrock instance.
 
 ### Setup
 
@@ -37,7 +35,7 @@ To start the development server, run `npm run dev` in your terminal. Open [http:
 
 You can easily deploy your chatbot to Vercel by clicking the button below:
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/datastax/aws-bedrock-starter&env=ASTRA_DB_NAMESPACE,OPENAI_API_KEY,ASTRA_DB_ID,ASTRA_DB_REGION,ASTRA_DB_APPLICATION_TOKEN)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/datastax/wikichat&env=ASTRA_DB_NAMESPACE,OPENAI_API_KEY,ASTRA_DB_ID,ASTRA_DB_REGION,ASTRA_DB_APPLICATION_TOKEN)
 
 Remember to set your environment variables to the values obtained when setting up your Astra DB and OpenAI accounts.
 
