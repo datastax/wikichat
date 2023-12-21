@@ -5,14 +5,13 @@ import { CohereClient } from "cohere-ai";
 
 const {
   ASTRA_DB_APPLICATION_TOKEN,
-  ASTRA_DB_ID,
-  ASTRA_DB_REGION,
-  ASTRA_DB_NAMESPACE,
+  ASTRA_DB_ENDPOINT,
   ASTRA_DB_COLLECTION,
   COHERE_API_KEY,
+  BUGSNAG_API_KEY,
 } = process.env;
 
-const astraDb = new AstraDB(ASTRA_DB_APPLICATION_TOKEN, ASTRA_DB_ID, ASTRA_DB_REGION, ASTRA_DB_NAMESPACE);
+const astraDb = new AstraDB(ASTRA_DB_APPLICATION_TOKEN, ASTRA_DB_ENDPOINT);
 
 const cohere = new CohereClient({
   token: COHERE_API_KEY,
@@ -60,6 +59,7 @@ export async function POST(req: Request) {
 
     try {
       const collection = await astraDb.collection(ASTRA_DB_COLLECTION);
+      const metadataCollection = await astraDb.collection("article_metadata");
 
       const cursor = collection.find(null, {
         sort: {
@@ -68,11 +68,30 @@ export async function POST(req: Request) {
         limit: 20,
       });
 
+      const metadataCursor = metadataCollection.find({},
+        {
+          sort: { "article_metadata.modified_timestamp": -1 },
+          projection: {
+            "article_metadata.title" : 1,
+            "suggested_question_chunks" : 1
+          },
+          limit: 3
+        });
+
       const documents = await cursor.toArray();
 
       const docsMap = documents?.map(doc => { return {title: doc.title, context: doc.content }});
 
-      docContext = JSON.stringify(docsMap);
+      const metadataDocuments = await metadataCursor.toArray();
+
+      const metadataDocsMap = metadataDocuments?.map(doc => { 
+        return {
+          title: doc.article_metadata.title, 
+          content: doc.suggested_question_chunks.map(chunk => chunk.content)
+        }
+      });
+
+      docContext = JSON.stringify(metadataDocsMap);
 
     } catch (e) {
       console.log("Error querying db...");
@@ -85,10 +104,9 @@ export async function POST(req: Request) {
         temperature: 1.5,
         messages: [{
           role: 'user',
-          content: `You are an assistant who creates sample question to ask a chatbot
-          Given the context below of the most recently added data to the most popular pages on Wikipedia come up with 4 suggested questions do not number this list
-          Make the suggested questions on a variety of topics but avoid religion, be as relevent as possible to ${month} ${year}, and keep them to less than 12 words each
-          Remove any numbers prefixing the questions.
+          content: `You are an assistant who creates sample questions to ask a chatbot.
+          Given the context below of the most recently added data to the most popular pages on Wikipedia come up with 4 suggested questions
+          Make the suggested questions on a variety of topics and keep them to less than 12 words each
 
           START CONTEXT
           ${docContext}
