@@ -5,14 +5,12 @@ import { CohereClient } from "cohere-ai";
 
 const {
   ASTRA_DB_APPLICATION_TOKEN,
-  ASTRA_DB_ID,
-  ASTRA_DB_REGION,
-  ASTRA_DB_NAMESPACE,
+  ASTRA_DB_ENDPOINT,
   ASTRA_DB_COLLECTION,
   COHERE_API_KEY,
 } = process.env;
 
-const astraDb = new AstraDB(ASTRA_DB_APPLICATION_TOKEN, ASTRA_DB_ID, ASTRA_DB_REGION, ASTRA_DB_NAMESPACE);
+const astraDb = new AstraDB(ASTRA_DB_APPLICATION_TOKEN, ASTRA_DB_ENDPOINT);
 
 const cohere = new CohereClient({
   token: COHERE_API_KEY,

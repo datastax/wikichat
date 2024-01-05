@@ -1,101 +1,115 @@
-import { CohereClient } from "cohere-ai";
-
-import OpenAI from 'openai';
-import { OpenAIStream, StreamingTextResponse, Message as VercelChatMessage} from "ai";
-import {AstraDB} from "@datastax/astra-db-ts";
 import Bugsnag from '@bugsnag/js';
+import { CohereEmbeddings } from "@langchain/cohere";
+import { Document } from "@langchain/core/documents";
+import { RunnableSequence } from "@langchain/core/runnables";
+import { StringOutputParser } from "@langchain/core/output_parsers";
+import {
+  AstraDBVectorStore,
+  AstraLibArgs,
+} from "@langchain/community/vectorstores/astradb";
+import { ChatOpenAI } from "langchain/chat_models/openai";
+import { PromptTemplate } from "langchain/prompts";
+import { StreamingTextResponse, Message } from "ai";
 
 const {
   ASTRA_DB_APPLICATION_TOKEN,
-  ASTRA_DB_ID,
-  ASTRA_DB_REGION,
-  ASTRA_DB_NAMESPACE,
+  ASTRA_DB_ENDPOINT,
   ASTRA_DB_COLLECTION,
   COHERE_API_KEY,
   BUGSNAG_API_KEY,
+  OPENAI_API_KEY,
 } = process.env;
 
 if (BUGSNAG_API_KEY) {
   Bugsnag.start({ apiKey: BUGSNAG_API_KEY })
 }
 
-const cohere = new CohereClient({
-  token: COHERE_API_KEY,
-});
+const Template = `You are an AI assistant answering questions about anything from Wikipedia the context will provide you with the most relevant page data along with the source pages title and url.
+Refer to the context as wikipedia data. Format responses using markdown where applicable and don't return images.
+If referencing the text/context refer to it as Wikipedia.
+At the end of the response on a line by itself add one markdown link to the Wikipedia url where the most relevant data was found label it with the title of the wikipedia page and no "Source:" or "Wikipedia" prefix or other text.
+The max links you should include is 1 refer to this source as "the source below".
+if the context is empty anwser it to the best of your ability.
 
+<context>
+  {context}
+</context>
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+<chat_history>
+  {chat_history}
+</chat_history>
 
-const astraDb = new AstraDB(ASTRA_DB_APPLICATION_TOKEN, ASTRA_DB_ID, ASTRA_DB_REGION, ASTRA_DB_NAMESPACE);
+QUESTION: {question}  
+`;
+
+const prompt = PromptTemplate.fromTemplate(Template);
+
+const combineDocumentsFn = (docs: Document[]) => {
+  const serializedDocs = docs.map((doc) => doc.pageContent);
+  return serializedDocs.join("\n\n");
+};
+
+const formatVercelMessages = (chatHistory: Message[]) => {
+  const formattedDialogueTurns = chatHistory.map((message) => {
+    if (message.role === "user") {
+      return `Human: ${message.content}`;
+    } else if (message.role === "assistant") {
+      return `Assistant: ${message.content}`;
+    } else {
+      return `${message.role}: ${message.content}`;
+    }
+  });
+  return formattedDialogueTurns.join("\n");
+};
 
 export async function POST(req: Request) {
   try {
-    const {messages, useRag, llm, similarityMetric} = await req.json();
+    const {messages, llm} = await req.json();
+    const previousMessages = messages.slice(0, -1);
     const latestMessage = messages[messages?.length - 1]?.content;
 
-    let docContext = '';
-    if (useRag) {
-      const embedded = await cohere.embed({
-        texts: [latestMessage],
-        model: "embed-english-light-v3.0",
-        inputType: "search_query",
-      });
-
-      try {
-        const collection = await astraDb.collection(ASTRA_DB_COLLECTION);
-        const cursor = collection.find(null, {
-          sort: {
-            $vector: embedded?.embeddings[0],
-          },
-          limit: 5,
-        });
-
-        const documents = await cursor.toArray();
-        const docsMap = documents?.map(doc => { return {title: doc.title, url: doc.url, context: doc.content }});
-
-        docContext = JSON.stringify(docsMap);
-      } catch (e) {
-        if (BUGSNAG_API_KEY) {
-          Bugsnag.notify(e, event => {
-            event.addMetadata("chat", {
-              latestMessage,
-            })
-          });
-        }
-        console.log("Error querying db...");
-        docContext = "";
-      }
-    }
-
-    const Template = {
-      role: 'system',
-      content: `You are an AI assistant answering questions about anything from Wikipedia the context will provide you with the most relevant page data along with the source pages title and url.
-        Refer to the context as wikipedia data. Format responses using markdown where applicable and don't return images.
-        If referencing the text/context refer to it as Wikipedia.
-        At the end of the response on a line by itself add one markdown link to the Wikipedia url where the most relevant data was found label it with the title of the wikipedia page and no "Source:" or "Wikipedia" prefix or other text.
-        The max links you should include is 1 refer to this source as "the source below".
-
-        if the context is empty anwser it to the best of your ability.
-        ----------------
-        START CONTEXT
-        ${docContext}
-        END CONTEXT
-        ----------------
-        QUESTION: ${latestMessage}
-        ----------------      
-        `
+    const embeddings = new CohereEmbeddings({
+      apiKey: COHERE_API_KEY,
+    });
+    
+    const chatModel = new ChatOpenAI({
+      temperature: 0.5,
+      openAIApiKey: OPENAI_API_KEY,
+      modelName: llm ?? "gpt-4",
+      streaming: true,
+    });
+    
+    const astraConfig: AstraLibArgs = {
+      token: ASTRA_DB_APPLICATION_TOKEN,
+      endpoint: ASTRA_DB_ENDPOINT,
+      collection: ASTRA_DB_COLLECTION,
+      contentKey: "content",
     };
 
-    const response = await openai.chat.completions.create(
+    const vectorStore = new AstraDBVectorStore(embeddings, astraConfig);
+
+    await vectorStore.initialize();
+
+    const retriever = vectorStore.asRetriever();
+
+    const chain = RunnableSequence.from([
       {
-        model: llm ?? 'gpt-4',
-        stream: true,
-        messages: [Template, ...messages],
-      }
-    );
-    const stream = OpenAIStream(response);
+        context: RunnableSequence.from([
+          (input) => input.question,
+          retriever.pipe(combineDocumentsFn),
+        ]),
+        chat_history: (input) => input.chat_history,
+        question: (input) => input.question,
+      },
+      prompt,
+      chatModel,
+      new StringOutputParser(),
+    ])
+
+    const stream = await chain.stream({
+      chat_history: formatVercelMessages(previousMessages),
+      question: latestMessage, 
+    });
 
     return new StreamingTextResponse(stream);
   } catch (e) {
