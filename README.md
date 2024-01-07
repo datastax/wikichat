@@ -1,4 +1,4 @@
-# Wikichat
+# WikiChat
 
 This project is a starter for creating a chatbot using Astra DB. It's designed to be easy to deploy and use, with a focus on performance and usability.
 
