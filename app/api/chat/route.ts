@@ -7,9 +7,7 @@ import Bugsnag from '@bugsnag/js';
 
 const {
   ASTRA_DB_APPLICATION_TOKEN,
-  ASTRA_DB_ID,
-  ASTRA_DB_REGION,
-  ASTRA_DB_NAMESPACE,
+  ASTRA_DB_ENDPOINT,
   ASTRA_DB_COLLECTION,
   COHERE_API_KEY,
   BUGSNAG_API_KEY,
@@ -28,7 +26,7 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-const astraDb = new AstraDB(ASTRA_DB_APPLICATION_TOKEN, ASTRA_DB_ID, ASTRA_DB_REGION, ASTRA_DB_NAMESPACE);
+const astraDb = new AstraDB(ASTRA_DB_APPLICATION_TOKEN, ASTRA_DB_ENDPOINT);
 
 export async function POST(req: Request) {
   try {
