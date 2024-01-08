@@ -1,21 +1,15 @@
-import {AstraDB} from "@datastax/astra-db-ts";
-import { OpenAIStream, StreamingTextResponse, Message as VercelChatMessage} from "ai";
+import { AstraDB } from "@datastax/astra-db-ts";
+import { OpenAIStream, StreamingTextResponse } from "ai";
 import OpenAI from 'openai';
-import { CohereClient } from "cohere-ai";
 
 const {
   ASTRA_DB_APPLICATION_TOKEN,
   ASTRA_DB_ENDPOINT,
-  ASTRA_DB_COLLECTION,
-  COHERE_API_KEY,
+  ASTRA_DB_SUGGESTIONS_COLLECTION,
   BUGSNAG_API_KEY,
 } = process.env;
 
 const astraDb = new AstraDB(ASTRA_DB_APPLICATION_TOKEN, ASTRA_DB_ENDPOINT);
-
-const cohere = new CohereClient({
-  token: COHERE_API_KEY,
-});
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -25,75 +19,30 @@ export async function POST(req: Request) {
   try {
     let docContext = '';
 
-    // const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-
-    // const currentDate = new Date();
-    // const day = currentDate.getDate();
-    // const month = months[currentDate.getMonth()];
-    // const year = currentDate.getFullYear();
-    
-    // // add the appropriate suffix to the day
-    // const getDayWithSuffix = (day) => {
-    //   if (day >= 11 && day <= 13) {
-    //     return day + "th";
-    //   }
-    //   switch (day % 10) {
-    //     case 1:
-    //       return day + "st";
-    //     case 2:
-    //       return day + "nd";
-    //     case 3:
-    //       return day + "rd";
-    //     default:
-    //       return day + "th";
-    //   }
-    // }
-    
-    // const formattedDate = `${month} ${getDayWithSuffix(day)} ${year}`;
-
-    // const embedded = await cohere.embed({
-    //   texts:[formattedDate],
-    //   model: "embed-english-light-v3.0",
-    //   inputType: "search_query",
-    // });
-
     try {
-      // const collection = await astraDb.collection(ASTRA_DB_COLLECTION);
-      const metadataCollection = await astraDb.collection("article_metadata");
+      const suggestionsCollection = await astraDb.collection(ASTRA_DB_SUGGESTIONS_COLLECTION);
 
-      // const cursor = collection.find(null, {
-      //   sort: {
-      //     $vector: embedded?.embeddings[0],
-      //   },
-      //   limit: 20,
-      // });
-
-      const metadataCursor = metadataCollection.find({},
+      const suggestionsCursor = suggestionsCollection.find(
         {
-          sort: { "article_metadata.modified_timestamp": -1 },
+          _id: "recent_articles"
+        },
+        {
           projection: {
-            "article_metadata.title" : 1,
-            "suggested_question_chunks" : 1
+            "recent_articles.metadata.title" : 1,
+            "recent_articles.suggested_chunks.content" : 1
           },
-          limit: 3
         });
 
-      // const documents = await cursor.toArray();
+      const suggestionsDocuments = await suggestionsCursor.toArray();
 
-      // const docsMap = documents?.map(doc => { return {title: doc.title, context: doc.content }});
-
-      const metadataDocuments = await metadataCursor.toArray();
-
-      const metadataDocsMap = metadataDocuments?.map(doc => { 
+      const docsMap = suggestionsDocuments?.map(doc => { 
         return {
-          title: doc.article_metadata.title, 
-          content: doc.suggested_question_chunks.map(chunk => chunk.content)
+          title: doc.recent_articles[0].metadata.title, 
+          content: doc.recent_articles[0].suggested_chunks.map(chunk => chunk.content)
         }
       });
-
-      console.log(metadataDocsMap);
       
-      docContext = JSON.stringify(metadataDocsMap);
+      docContext = JSON.stringify(docsMap);
 
     } catch (e) {
       console.log("Error querying db...");
