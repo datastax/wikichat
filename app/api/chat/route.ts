@@ -14,7 +14,6 @@ import { StreamingTextResponse, Message } from "ai";
 const {
   ASTRA_DB_APPLICATION_TOKEN,
   ASTRA_DB_ENDPOINT,
-  ASTRA_DB_ENDPOINT,
   ASTRA_DB_COLLECTION,
   COHERE_API_KEY,
   BUGSNAG_API_KEY,
@@ -71,6 +70,8 @@ export async function POST(req: Request) {
 
     const embeddings = new CohereEmbeddings({
       apiKey: COHERE_API_KEY,
+      inputType: 'search_document',
+      model: 'embed-english-light-v3.0',
     });
     
     const chatModel = new ChatOpenAI({
