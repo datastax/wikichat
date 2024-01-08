@@ -1,4 +1,4 @@
-# Wikichat
+# WikiChat
 
 This project is a starter for creating a chatbot using Astra DB. It's designed to be easy to deploy and use, with a focus on performance and usability.
 
@@ -36,4 +36,3 @@ You can easily deploy your chatbot to Vercel by clicking the button below:
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/datastax/wikichat&env=ASTRA_DB_NAMESPACE,OPENAI_API_KEY,ASTRA_DB_ID,ASTRA_DB_REGION,ASTRA_DB_APPLICATION_TOKEN)
 
 Remember to set your environment variables to the values obtained when setting up your Astra DB and OpenAI accounts.
-

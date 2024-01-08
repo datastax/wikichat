@@ -10,7 +10,6 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@aws-sdk/client-bedrock-runtime": "^3.454.0",
     "@bugsnag/js": "^7.22.2",
     "@datastax/astra-db-ts": "0.1.2",
     "@types/node": "^20.8.10",
