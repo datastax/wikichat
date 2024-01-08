@@ -14,6 +14,7 @@ import { StreamingTextResponse, Message } from "ai";
 const {
   ASTRA_DB_APPLICATION_TOKEN,
   ASTRA_DB_ENDPOINT,
+  ASTRA_DB_ENDPOINT,
   ASTRA_DB_COLLECTION,
   COHERE_API_KEY,
   BUGSNAG_API_KEY,
