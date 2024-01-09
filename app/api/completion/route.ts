@@ -1,3 +1,4 @@
+import Bugsnag from '@bugsnag/js';
 import { AstraDB } from "@datastax/astra-db-ts";
 import { OpenAIStream, StreamingTextResponse } from "ai";
 import OpenAI from 'openai';
@@ -7,12 +8,13 @@ const {
   ASTRA_DB_ENDPOINT,
   ASTRA_DB_SUGGESTIONS_COLLECTION,
   BUGSNAG_API_KEY,
+  OPENAI_API_KEY,
 } = process.env;
 
 const astraDb = new AstraDB(ASTRA_DB_APPLICATION_TOKEN, ASTRA_DB_ENDPOINT);
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: OPENAI_API_KEY,
 });
 
 export async function POST(req: Request) {
@@ -70,6 +72,9 @@ export async function POST(req: Request) {
 
     return new StreamingTextResponse(stream);
   } catch (e) {
-    console.error(e);
+    if (BUGSNAG_API_KEY) {
+      Bugsnag.notify(e);
+    }
+    throw e;
   }
 }
