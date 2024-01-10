@@ -1,0 +1,9 @@
+astrapy==0.6.2
+beautifulsoup4==4.12.2
+dataclasses-json==0.6.3
+lxml==4.9.4
+aiohttp-sse-client2==0.3.0
+cohere==4.34
+pytz==2023.3.post1
+python-dotenv==1.0.0
+langchain==0.0.336
