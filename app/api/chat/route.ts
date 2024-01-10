@@ -70,7 +70,7 @@ export async function POST(req: Request) {
 
     const embeddings = new CohereEmbeddings({
       apiKey: COHERE_API_KEY,
-      inputType: 'search_document',
+      inputType: 'search_query',
       model: 'embed-english-light-v3.0',
     });
     
