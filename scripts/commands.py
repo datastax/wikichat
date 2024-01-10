@@ -9,10 +9,10 @@ from aiohttp_sse_client2.client import MessageEvent, EventSource
 
 from dataclasses_json import dataclass_json
 
-from v2 import process
-from v2.metrics import METRICS
-from v2.model import ArticleMetadata
-from v2.pipeline import AsyncPipeline
+from scripts import process
+from scripts.metrics import METRICS
+from scripts.model import ArticleMetadata
+from scripts.pipeline import AsyncPipeline
 
 WIKIPEDIA_CHANGES_URL = 'https://stream.wikimedia.org/v2/stream/recentchange'
 
@@ -32,7 +32,7 @@ class CommandArgs:
                                     "is_file_arg": True,
                                     "help": 'Maximum number of lines to read from the file to start processing.'
                                 })
-    file: str = field(default="v2/wiki_links.txt",
+    file: str = field(default="scripts/wiki_links.txt",
                       metadata={
                           "is_file_arg": True,
                           "help": 'File of urls, one per line'}
