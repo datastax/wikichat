@@ -4,7 +4,7 @@ import time
 from dataclasses import dataclass, field
 from datetime import timedelta
 
-from v2.pipeline import AsyncPipeline
+from scripts.pipeline import AsyncPipeline
 
 
 @dataclass

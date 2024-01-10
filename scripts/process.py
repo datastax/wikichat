@@ -11,14 +11,14 @@ from datetime import datetime
 
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
-from v2 import utils, embeddings
-from v2 import wikipedia
-from v2.database import EMBEDDING_COLLECTION, METADATA_COLLECTION, SUGGESTIONS_COLLECTION
-from v2.metrics import METRICS
-from v2.model import ArticleMetadata, Article, ChunkedArticle, Chunk, ChunkMetadata, ChunkedArticleDiff, \
+from scripts import utils, embeddings
+from scripts import wikipedia
+from scripts.database import EMBEDDING_COLLECTION, METADATA_COLLECTION, SUGGESTIONS_COLLECTION
+from scripts.metrics import METRICS
+from scripts.model import ArticleMetadata, Article, ChunkedArticle, Chunk, ChunkMetadata, ChunkedArticleDiff, \
     ChunkedArticleMetadataOnly, VectoredChunkedArticleDiff, VectoredChunk, EmbeddingDocument, RECENT_ARTICLES, \
     RecentArticles
-from v2.pipeline import AsyncStep, AsyncPipeline
+from scripts.pipeline import AsyncStep, AsyncPipeline
 
 TEXT_SPLITTER = RecursiveCharacterTextSplitter(chunk_size=512, chunk_overlap=100, length_function=len)
 

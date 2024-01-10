@@ -9,7 +9,7 @@ import aiohttp
 from bs4 import BeautifulSoup, ResultSet as bs4ResultSet
 import pytz
 
-from v2.model import ArticleMetadata, Article
+from scripts.model import ArticleMetadata, Article
 
 CONTENT_ELEMENT_ID = 'mw-content-text'
 VALID_TAGS = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6']
