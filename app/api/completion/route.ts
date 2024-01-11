@@ -1,7 +1,7 @@
-import Bugsnag from '@bugsnag/js';
+import Bugsnag from "@bugsnag/js";
 import { AstraDB } from "@datastax/astra-db-ts";
 import { OpenAIStream, StreamingTextResponse } from "ai";
-import OpenAI from 'openai';
+import OpenAI from "openai";
 
 const {
   ASTRA_DB_APPLICATION_TOKEN,
@@ -19,7 +19,7 @@ const openai = new OpenAI({
 
 export async function POST(req: Request) {
   try {
-    let docContext = '';
+    let docContext = "";
 
     try {
       const suggestionsCollection = await astraDb.collection(ASTRA_DB_SUGGESTIONS_COLLECTION);
@@ -52,11 +52,11 @@ export async function POST(req: Request) {
 
     const response = await openai.chat.completions.create(
       {
-        model: 'gpt-3.5-turbo',
+        model: "gpt-3.5-turbo",
         stream: true,
         temperature: 1.5,
         messages: [{
-          role: 'user',
+          role: "user",
           content: `You are an assistant who creates sample questions to ask a chatbot.
           Given the context below of the most recently added data to the most popular pages on Wikipedia come up with 4 suggested questions
           Make the suggested questions on a variety of topics and keep them to less than 12 words each

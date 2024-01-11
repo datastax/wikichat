@@ -1,4 +1,4 @@
-import Bugsnag from '@bugsnag/js';
+import Bugsnag from "@bugsnag/js";
 import { CohereEmbeddings } from "@langchain/cohere";
 import { Document } from "@langchain/core/documents";
 import { RunnableSequence } from "@langchain/core/runnables";
@@ -29,7 +29,7 @@ Refer to the context as wikipedia data. Format responses using markdown where ap
 If referencing the text/context refer to it as Wikipedia.
 At the end of the response on a line by itself add one markdown link to the Wikipedia url where the most relevant data was found label it with the title of the wikipedia page and no "Source:" or "Wikipedia" prefix or other text.
 The max links you should include is 1 refer to this source as "the source below".
-if the context is empty anwser it to the best of your ability.
+if the context is empty answer it to the best of your ability.
 
 <context>
   {context}
@@ -70,8 +70,8 @@ export async function POST(req: Request) {
 
     const embeddings = new CohereEmbeddings({
       apiKey: COHERE_API_KEY,
-      inputType: 'search_document',
-      model: 'embed-english-light-v3.0',
+      inputType: "search_query",
+      model: "embed-english-v3.0",
     });
     
     const chatModel = new ChatOpenAI({
