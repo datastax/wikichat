@@ -29,7 +29,7 @@ Refer to the context as wikipedia data. Format responses using markdown where ap
 If referencing the text/context refer to it as Wikipedia.
 At the end of the response on a line by itself add one markdown link to the Wikipedia url where the most relevant data was found label it with the title of the wikipedia page and no "Source:" or "Wikipedia" prefix or other text.
 The max links you should include is 1 refer to this source as "the source below".
-if the context is empty anwser it to the best of your ability.
+if the context is empty answer it to the best of your ability.
 
 <context>
   {context}
