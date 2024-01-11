@@ -1,4 +1,4 @@
-import Bugsnag from '@bugsnag/js';
+import Bugsnag from "@bugsnag/j";
 import { CohereEmbeddings } from "@langchain/cohere";
 import { Document } from "@langchain/core/documents";
 import { RunnableSequence } from "@langchain/core/runnables";
@@ -70,8 +70,8 @@ export async function POST(req: Request) {
 
     const embeddings = new CohereEmbeddings({
       apiKey: COHERE_API_KEY,
-      inputType: 'search_query',
-      model: 'embed-english-light-v3.0',
+      inputType: "search_query",
+      model: "embed-english-light-v3.0",
     });
     
     const chatModel = new ChatOpenAI({
