@@ -45,7 +45,11 @@ QUESTION: {question}
 const prompt = PromptTemplate.fromTemplate(Template);
 
 const combineDocumentsFn = (docs: Document[]) => {
-  const serializedDocs = docs.map((doc) => doc.pageContent);
+  const serializedDocs = docs.map((doc) => `
+Title: ${doc.metadata.title}
+URL: ${doc.metadata.url}
+Content: ${doc.pageContent}`);
+
   return serializedDocs.join("\n\n");
 };
 
@@ -92,7 +96,7 @@ export async function POST(req: Request) {
 
     await vectorStore.initialize();
 
-    const retriever = vectorStore.asRetriever();
+    const retriever = vectorStore.asRetriever(10);
 
     const chain = RunnableSequence.from([
       {
