@@ -1,4 +1,4 @@
-import Bugsnag from "@bugsnag/j";
+import Bugsnag from "@bugsnag/js";
 import { CohereEmbeddings } from "@langchain/cohere";
 import { Document } from "@langchain/core/documents";
 import { RunnableSequence } from "@langchain/core/runnables";
