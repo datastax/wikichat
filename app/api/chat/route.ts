@@ -92,7 +92,7 @@ export async function POST(req: Request) {
 
     await vectorStore.initialize();
 
-    const retriever = vectorStore.asRetriever(8);
+    const retriever = vectorStore.asRetriever();
 
     const chain = RunnableSequence.from([
       {
