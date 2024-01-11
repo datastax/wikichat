@@ -71,7 +71,7 @@ export async function POST(req: Request) {
     const embeddings = new CohereEmbeddings({
       apiKey: COHERE_API_KEY,
       inputType: "search_query",
-      model: "embed-english-light-v3.0",
+      model: "embed-english-v3.0",
     });
     
     const chatModel = new ChatOpenAI({
