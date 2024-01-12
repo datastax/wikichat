@@ -1,45 +1,12 @@
-import { useEffect, useState } from "react";
+interface Props {
+  theme: 'light' | 'dark';
+  setTheme: (theme: 'light' | 'dark') => void;
+}
 
-const ToggleButton = () => {
-  const [theme, setTheme] = useState<string | null>(null);
-
-  useEffect(() => {
-    const getLocalValue = () => {
-      const storedValue = localStorage.getItem('theme');
-      if (storedValue !== null) {
-        return storedValue;
-      }
-      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    };
-
-    const initialTheme = getLocalValue();
-    setTheme(initialTheme);
-
-    if (initialTheme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, []);
-
-  useEffect(() => {
-    if (theme !== null) {
-      localStorage.setItem('theme', theme);
-      if (theme === 'dark') {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
-    }
-  }, [theme]);
-
+const ToggleButton = ({theme, setTheme}: Props) => {
   const handleToggle = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark');
   };
-
-  if (theme === null) {
-    return null;
-  }
 
   return (
     <button onClick={handleToggle}>
