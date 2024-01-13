@@ -43,6 +43,10 @@ class PipelineCommand(CliCommand):
     async def _run_func(self, command_func: Callable, command_args: model.CommonPipelineArgs):
         from wikichat.utils.pipeline import AsyncPipeline
         from wikichat import processing
+        from wikichat import database
+
+        if command_args.truncate_first:
+            database.truncate_all_collections()
 
         pipeline: AsyncPipeline = processing.create_pipeline(max_items=command_args.max_articles)
         metrics_task = asyncio.create_task(METRICS.metrics_reporter_task(pipeline))

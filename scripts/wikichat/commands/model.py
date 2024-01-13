@@ -13,6 +13,10 @@ class CommonPipelineArgs():
                               metadata={
                                   "help": 'Maximum number of articles to process, from both bulk loading and listening.'})
 
+    truncate_first: bool = field(default=False,
+                                    metadata={
+                                        "help": 'Truncate the database before starting the pipeline.'})
+
 
 @dataclass_json
 @dataclass
