@@ -119,6 +119,15 @@ async def vectorize_diff(article_diff: ChunkedArticleDiff) -> VectoredChunkedArt
     vectors = await embeddings.get_embeddings([chunk.content for chunk in article_diff.new_chunks])
     await METRICS.update_chunks(chunks_vectorized=len(vectors))
 
+    # if any vectors are all zeros it means the chunk has objectional content, cohere will not process it
+    # and it seems like a good enough reason for us to skip the whole article
+    if any([all([x == 0 for x in vector]) for vector in vectors]):
+        logging.warning(f"Skipping article {article_diff.chunked_article.article.metadata.url} because it has objectionable content")
+        for i in range(len(vectors)):
+            if all([x == 0 for x in vectors[i]]):
+                logging.warning(f"Objectional chunk in {article_diff.chunked_article.article.metadata.url} = {article_diff.new_chunks[i].content}")
+        return None
+
     return VectoredChunkedArticleDiff(
         chunked_article=article_diff.chunked_article,
         new_chunks=[
