@@ -48,7 +48,8 @@ class PipelineCommand(CliCommand):
         if command_args.truncate_first:
             database.truncate_all_collections()
 
-        pipeline: AsyncPipeline = processing.create_pipeline(max_items=command_args.max_articles)
+        pipeline: AsyncPipeline = processing.create_pipeline(max_items=command_args.max_articles,
+                                                             rotate_collection_every=command_args.rotate_collections_every)
         metrics_task = asyncio.create_task(METRICS.metrics_reporter_task(pipeline))
 
         logging.info("Starting...")
@@ -85,6 +86,11 @@ def _embed_and_search() -> Callable:
     from wikichat.commands import database
     return database.embed_and_search
 
+def _suggested_articles() -> Callable:
+    from wikichat.commands import database
+    return database.suggested_articles
+
+
 
 ALL_COMMANDS: list[CliCommand] = [
     PipelineCommand(
@@ -109,11 +115,19 @@ ALL_COMMANDS: list[CliCommand] = [
         name="embed-and-search",
         help="Embed a question and search the database for similar articles",
         func_supplier=_embed_and_search,
-        args_cls=model.EmbedAndSearchArgs)
+        args_cls=model.EmbedAndSearchArgs),
+    CliCommand(
+        name="suggested-articles",
+        help="Get chunks for suggested articles based on recent articles",
+        func_supplier=_suggested_articles,
+        args_cls=None)
 ]
 
 
 def _add_command_args(args_cls, parser: ArgumentParser) -> ArgumentParser:
+    if not args_cls:
+        return
+
     for arg_field in fields(args_cls):
         if not arg_field.init:
             continue
