@@ -4,7 +4,7 @@ import time
 from dataclasses import dataclass, field
 from datetime import timedelta
 
-from scripts.pipeline import AsyncPipeline
+from wikichat.utils.pipeline import AsyncPipeline
 
 
 @dataclass

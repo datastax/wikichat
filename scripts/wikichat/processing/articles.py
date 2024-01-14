@@ -11,16 +11,16 @@ from datetime import datetime
 
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
-from scripts import utils, embeddings
-from scripts import wikipedia
-from scripts.database import EMBEDDING_COLLECTION, METADATA_COLLECTION, SUGGESTIONS_COLLECTION
-from scripts.metrics import METRICS
-from scripts.model import ArticleMetadata, Article, ChunkedArticle, Chunk, ChunkMetadata, ChunkedArticleDiff, \
+import wikichat.utils
+from wikichat.processing import embeddings, wikipedia
+from wikichat.database import EMBEDDING_COLLECTIONS, METADATA_COLLECTION, SUGGESTIONS_COLLECTION
+from wikichat.utils.metrics import METRICS
+from wikichat.processing.model import ArticleMetadata, Article, ChunkedArticle, Chunk, ChunkMetadata, ChunkedArticleDiff, \
     ChunkedArticleMetadataOnly, VectoredChunkedArticleDiff, VectoredChunk, EmbeddingDocument, RECENT_ARTICLES, \
     RecentArticles
-from scripts.pipeline import AsyncStep, AsyncPipeline
+from wikichat.utils.pipeline import AsyncPipeline
 
-TEXT_SPLITTER = RecursiveCharacterTextSplitter(chunk_size=512, chunk_overlap=100, length_function=len)
+TEXT_SPLITTER = RecursiveCharacterTextSplitter(chunk_size=1024, chunk_overlap=200, length_function=len)
 
 
 # ======================================================================================================================
@@ -62,7 +62,7 @@ async def calc_chunk_diff(chunked_article: ChunkedArticle) -> ChunkedArticleDiff
 
     logging.debug(f"Calculating chunk delta for article {chunked_article.article.metadata.url}")
     # get the existing chunks from the db
-    resp = await utils.wrap_blocking_io(
+    resp = await wikichat.utils.wrap_blocking_io(
         lambda x: METADATA_COLLECTION.find_one(filter={"_id": x}),
         new_metadata._id
     )
@@ -145,19 +145,19 @@ async def insert_vectored_chunks(vectored_chunks: list[VectoredChunk]) -> None:
 
     start_all = datetime.now()
     batch: list[VectoredChunk]
-    for batch_count, batch in utils.batch_list(vectored_chunks, batch_size, enumerate_batches=True):
+    for batch_count, batch in wikichat.utils.batch_list(vectored_chunks, batch_size, enumerate_batches=True):
         start_batch = datetime.now()
         article_embeddings: list[EmbeddingDocument] = list(map(EmbeddingDocument.from_vectored_chunk, batch))
 
         # use options.ordered = false so documents can be inserted in parallel
         logging.debug(f"Inserting batch number {batch_count} with size {len(batch)}")
-        resp = await utils.wrap_blocking_io(
-            lambda x: EMBEDDING_COLLECTION.insert_many(
+        resp = await wikichat.utils.wrap_blocking_io(
+            lambda coll, x: coll.insert_many(
                 documents=x,
                 options={"ordered": False},
                 partial_failures_allowed=True
             ),
-            [article_embedding.to_dict() for article_embedding in article_embeddings]
+            await EMBEDDING_COLLECTIONS.current(), [article_embedding.to_dict() for article_embedding in article_embeddings]
         )
 
         # We are OK with DOCUMENT_ALREADY_EXISTS errors
@@ -192,16 +192,16 @@ async def delete_vectored_chunks(chunks: list[ChunkMetadata]) -> None:
     logging.debug(f"Starting deleting {len(chunks)} article embedding chunks into db using batches of {batch_size}")
 
     start_all = datetime.now()
-    for batch_count, batch in utils.batch_list(chunks, batch_size, enumerate_batches=True):
+    for batch_count, batch in wikichat.utils.batch_list(chunks, batch_size, enumerate_batches=True):
         start_batch = datetime.now()
         logging.debug(f"Deleting batch number {batch_count} with size {len(batch)}")
-        resp = await utils.wrap_blocking_io(
-            lambda x: EMBEDDING_COLLECTION.delete_many(
+        resp = await wikichat.utils.wrap_blocking_io(
+            lambda coll, x: coll.delete_many(
                 filter={
                     "_id": {"$in": x}
                 }
             ),
-            [chunk.hash for chunk in batch]
+            await EMBEDDING_COLLECTIONS.current(), [chunk.hash for chunk in batch]
         )
         logging.debug(f"Finished deleting batch number {batch_count} duration {datetime.now() - start_batch}")
     await METRICS.update_database(chunks_deleted=len(chunks))
@@ -214,7 +214,7 @@ async def update_article_metadata(vectored_diff: VectoredChunkedArticleDiff) -> 
     logging.debug(
         f"Updating article metadata for article url {new_metadata.article_metadata.url}")
 
-    await utils.wrap_blocking_io(
+    await wikichat.utils.wrap_blocking_io(
         lambda x: METADATA_COLLECTION.find_one_and_replace(
             filter={"_id": x._id},
             replacement=x.to_dict(),
@@ -224,8 +224,9 @@ async def update_article_metadata(vectored_diff: VectoredChunkedArticleDiff) -> 
     )
 
     # TODO COmment
-    recent_articles: RecentArticles = await RECENT_ARTICLES.update_and_clone(new_metadata)
-    await utils.wrap_blocking_io(
+    embedding_collection = await EMBEDDING_COLLECTIONS.current()
+    recent_articles: RecentArticles = await RECENT_ARTICLES.update_and_clone(embedding_collection.collection_name, new_metadata)
+    await wikichat.utils.wrap_blocking_io(
         lambda x: SUGGESTIONS_COLLECTION.find_one_and_replace(
             filter={"_id": x._id},
             replacement=x.to_dict(),
@@ -249,11 +250,3 @@ async def process_article_metadata(pipeline: AsyncPipeline, article_metadata: li
             return False
     return True
 
-
-def create_pipeline(max_items: int = 100) -> AsyncPipeline:
-    return AsyncPipeline(max_items=max_items) \
-        .add_step(AsyncStep(load_article, 10)) \
-        .add_step(AsyncStep(chunk_article, 2)) \
-        .add_step(AsyncStep(calc_chunk_diff, 5)) \
-        .add_step(AsyncStep(vectorize_diff, 5)) \
-        .add_last_step(AsyncStep(store_article_diff, 3))

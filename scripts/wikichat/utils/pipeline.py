@@ -51,10 +51,11 @@ class AsyncStep:
 
 
 class AsyncPipeline:
-    def __init__(self, max_items: int = 0):
+    def __init__(self, max_items: int = 0, listener: Callable[[int], bool] =None):
         self.steps: list[AsyncStep] = []
         self._put_count: int = 0
         self.max_items: int = max_items
+        self._listener: Callable[[AsyncPipeline, int], bool] = listener
         self._async_lock = asyncio.Lock()
 
     def add_step(self, step: AsyncStep) -> 'AsyncPipeline':
@@ -74,6 +75,10 @@ class AsyncPipeline:
     async def put_to_first_step(self, item: Any) -> bool:
         async with self._async_lock:
             if not self.max_items or self._put_count < self.max_items:
+                if self._listener is not None:
+                    add_item: bool = await self._listener(self, self._put_count)
+                    if not add_item:
+                        return False
                 self._put_count += 1
                 await self.steps[0].source.put(item)
                 return True

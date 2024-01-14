@@ -4,7 +4,7 @@
 
 This is a hack to get peeps going while we polish, all the files will get moved around soon.
 
-The code Aaron wrote is in this dir, scripts. It will get moved soon.
+The code Aaron wrote is in this dir, v2. It will get moved soon.
 
 To get started: 
 
@@ -49,14 +49,14 @@ options:
                         Maximum number of articles to process, from both bulk loading and listening. (default: 25)
   --max_file_lines MAX_FILE_LINES
                         Maximum number of lines to read from the file to start processing. (default: 15)
-  --file FILE           File of urls, one per line (default: scripts/wiki_links.txt)
+  --file FILE           File of urls, one per line (default: v2/wiki_links.txt)
 ```
 
 You do not need to pass any args to make it work, try with the defaults and listen for new articles.
 
 ```commandline
 % python3 wiki_data.py listen       
-2024-01-10 19:34:25.163 - INFO    - root - unknown_worker - Running command listen with args CommandArgs(max_articles=25, max_file_lines=15, file='scripts/wiki_links.txt')
+2024-01-10 19:34:25.163 - INFO    - root - unknown_worker - Running command listen with args CommandArgs(max_articles=25, max_file_lines=15, file='v2/wiki_links.txt')
 2024-01-10 19:34:25.166 - INFO    - root - unknown_worker - Starting...
 2024-01-10 19:34:25.175 - INFO    - root - unknown_worker - 
                 Total Time (h:mm:s):0:00:00.016958

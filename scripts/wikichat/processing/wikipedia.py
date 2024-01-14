@@ -1,15 +1,13 @@
 """This module contains functions to read wikipedia articles
 """
 from dataclasses import replace
-from datetime import datetime
 import logging
 import re
 
 import aiohttp
 from bs4 import BeautifulSoup, ResultSet as bs4ResultSet
-import pytz
 
-from scripts.model import ArticleMetadata, Article
+from wikichat.processing.model import ArticleMetadata, Article
 
 CONTENT_ELEMENT_ID = 'mw-content-text'
 VALID_TAGS = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6']

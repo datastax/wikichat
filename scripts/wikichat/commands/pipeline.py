@@ -1,50 +1,18 @@
 """Commands that are run from the command line args"""
 import json
 import logging
-from dataclasses import dataclass, field, fields
-from typing import Any, Union
+from typing import Any
 
 from aiohttp import ClientPayloadError
 from aiohttp_sse_client2.client import MessageEvent, EventSource
 
-from dataclasses_json import dataclass_json
-
-from scripts import process
-from scripts.metrics import METRICS
-from scripts.model import ArticleMetadata
-from scripts.pipeline import AsyncPipeline
+from wikichat.commands.model import CommonPipelineArgs, LoadPipelineArgs
+from wikichat.processing.articles import process_article_metadata
+from wikichat.processing.model import ArticleMetadata
+from wikichat.utils.metrics import METRICS
+from wikichat.utils.pipeline import AsyncPipeline
 
 WIKIPEDIA_CHANGES_URL = 'https://stream.wikimedia.org/v2/stream/recentchange'
-
-
-# ======================================================================================================================
-# Model
-# ======================================================================================================================
-
-@dataclass_json
-@dataclass
-class CommandArgs:
-    max_articles: int = field(default=25,
-                              metadata={
-                                  "help": 'Maximum number of articles to process, from both bulk loading and listening.'})
-    max_file_lines: int = field(default=15,
-                                metadata={
-                                    "is_file_arg": True,
-                                    "help": 'Maximum number of lines to read from the file to start processing.'
-                                })
-    file: str = field(default="scripts/wiki_links.txt",
-                      metadata={
-                          "is_file_arg": True,
-                          "help": 'File of urls, one per line'}
-                      )
-
-    @classmethod
-    def add_command_args(cls, parser, include_file_args=True):
-        for arg_field in fields(cls):
-            if include_file_args or not arg_field.metadata.get("is_file_arg", False):
-                parser.add_argument(f"--{arg_field.name}", type=arg_field.type, required=False,
-                                    default=arg_field.default,
-                                    help=arg_field.metadata.get("help", ""))
 
 
 # ======================================================================================================================
@@ -52,12 +20,12 @@ class CommandArgs:
 # These are called with a pipeline to run on and CommandArgs
 # ======================================================================================================================
 
-async def load_base_data(pipeline: AsyncPipeline, args: CommandArgs) -> bool:
-    return await process.process_article_metadata(pipeline,
-                                                  read_popular_links(args.file, max_file_lines=args.max_file_lines))
+async def load_base_data(pipeline: AsyncPipeline, args: LoadPipelineArgs) -> bool:
+    return await process_article_metadata(pipeline,
+                                          read_popular_links(args.file, max_file_lines=args.max_file_lines))
 
 
-async def listen_for_changes(pipeline: AsyncPipeline, args: CommandArgs) -> bool:
+async def listen_for_changes(pipeline: AsyncPipeline, args: CommonPipelineArgs) -> bool:
     # for SSE client see https://pypi.org/project/aiohttp-sse-client2/
 
     event: MessageEvent
@@ -88,7 +56,7 @@ async def listen_for_changes(pipeline: AsyncPipeline, args: CommandArgs) -> bool
                             )
 
                             # Let's process this article!
-                            if not await process.process_article_metadata(pipeline, [article_metadata]):
+                            if not await process_article_metadata(pipeline, [article_metadata]):
                                 keep_listening = False
                                 break
                             await METRICS.update_listener(total_events=1, enwiki_edits=1)
@@ -109,7 +77,7 @@ async def listen_for_changes(pipeline: AsyncPipeline, args: CommandArgs) -> bool
     return False
 
 
-async def load_and_listen(pipeline: AsyncPipeline, args: CommandArgs) -> bool:
+async def load_and_listen(pipeline: AsyncPipeline, args: LoadPipelineArgs) -> bool:
     if await load_base_data(pipeline, args):
         logging.info("Starting to listen for changes")
         return await listen_for_changes(pipeline, args)
