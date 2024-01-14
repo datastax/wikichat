@@ -30,7 +30,7 @@ export default function Home() {
     }
   });
   const { theme, setTheme } = useTheme();
-  const { useRag, llm, similarityMetric, setConfiguration } = useConfiguration();
+  const { useRag, llm, similarityMetric, setConfiguration, collection } = useConfiguration();
 
   const messagesEndRef = useRef(null);
   const [configureOpen, setConfigureOpen] = useState(false);
@@ -53,7 +53,7 @@ export default function Home() {
 
   const handlePrompt = (promptText) => {
     const msg: Message = { id: crypto.randomUUID(),  content: promptText, role: 'user' };
-    append(msg, { options: { body: { useRag, llm, similarityMetric}}});
+    append(msg, { options: { body: { collection, llm, similarityMetric}}});
   };
 
   return (
