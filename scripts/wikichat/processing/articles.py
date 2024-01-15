@@ -111,7 +111,7 @@ async def calc_chunk_diff(chunked_article: ChunkedArticle) -> ChunkedArticleDiff
         unchanged_chunks=unchanged_chunks)
 
 
-async def vectorize_diff(article_diff: ChunkedArticleDiff) -> VectoredChunkedArticleDiff:
+async def vectorize_diff(article_diff: ChunkedArticleDiff) -> VectoredChunkedArticleDiff | None:
     """Calc the vectors for all the chunks we want to store in the db"""
 
     logging.debug(f"Getting embeddings for article {article_diff.chunked_article.article.metadata.url} "
@@ -120,13 +120,16 @@ async def vectorize_diff(article_diff: ChunkedArticleDiff) -> VectoredChunkedArt
     vectors = await embeddings.get_embeddings([chunk.content for chunk in article_diff.new_chunks])
     await METRICS.update_chunks(chunks_vectorized=len(vectors))
 
-    # if any vectors are all zeros it means the chunk has objectional content, cohere will not process it
-    # and it seems like a good enough reason for us to skip the whole article
-    if any([all([x == 0 for x in vector]) for vector in vectors]):
-        logging.warning(f"Skipping article {article_diff.chunked_article.article.metadata.url} because it has objectionable content")
+    # We can get vectors with all zeros, this could be because overloaded or objectionable content
+    # this will be rare, so count the non zero vectors and if we have any zero vectors skip the article
+    non_zero_vectors = list(vector for vector in vectors if any(x != 0 for x in vector))
+    zero_vector_count = len(vectors) > len(non_zero_vectors)
+    if zero_vector_count:
+        logging.debug(f"Skipping article {article_diff.chunked_article.article.metadata.url} cohere returned {zero_vector_count} zero vectors")
         for i in range(len(vectors)):
             if all([x == 0 for x in vectors[i]]):
-                logging.warning(f"Objectional chunk in {article_diff.chunked_article.article.metadata.url} = {article_diff.new_chunks[i].content}")
+                logging.debug(f"Zero vector for chunk in {article_diff.chunked_article.article.metadata.url} content= {article_diff.new_chunks[i].content}")
+        await METRICS.update_article(zero_vectors=1)
         return None
 
     return VectoredChunkedArticleDiff(
