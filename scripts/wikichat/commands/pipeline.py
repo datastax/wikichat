@@ -60,8 +60,6 @@ async def listen_for_changes(pipeline: AsyncPipeline, args: CommonPipelineArgs) 
                                 keep_listening = False
                                 break
                             await METRICS.update_listener(total_events=1, enwiki_edits=1)
-                            logging.info(f"Updated article: {article_metadata.url}")
-
                         case _:
                             await METRICS.update_listener(total_events=1, skipped_events=1)
 
