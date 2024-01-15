@@ -60,9 +60,11 @@ class AsyncStep:
                 if result is not None and self._next_step:
                     # there is no dest when this is the last step
                     await self._next_step.add_item(result)
-            except Exception:
-                logging.exception(f"Error in worker {worker_name}", exc_info=True)
-                sys.exit(1)
+            except Exception as e:
+                logging.exception(f"Error in worker, item will be dropped - {e}")
+                 # Second log is to get the details into the debug so we can fix, first is to get it into
+                # heroku or other log aggregators
+                logging.debug(f"Error in worker {worker_name}", exc_info=True)
             finally:
                 WORKER_NAME_CONTEXT_VAR.reset(context_token)
 

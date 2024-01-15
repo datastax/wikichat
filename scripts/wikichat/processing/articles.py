@@ -189,7 +189,6 @@ async def insert_vectored_chunks(vectored_chunks: list[VectoredChunk]) -> None:
                     doc = article_embedding.to_dict()
                     doc.pop("$vector", None)
                     existing_chunk_logger.warning(doc)
-            sys.exit(1)
 
         if len(errors) != len(exists_errors):
             logging.error(f"Got non DOCUMENT_ALREADY_EXISTS errors, stopping: {errors}")
