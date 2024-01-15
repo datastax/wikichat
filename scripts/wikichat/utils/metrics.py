@@ -15,6 +15,9 @@ class ListenerMetrics:
     skipped_events: int = 0
     enwiki_edits: int = 0
 
+@dataclass
+class ArticleMetrics:
+    redirects: int = 0
 
 @dataclass
 class DBMetrics:
@@ -44,6 +47,7 @@ class _Metrics:
     _database: DBMetrics = field(default_factory=DBMetrics)
     _chunks: Chunks = field(default_factory=Chunks)
     _rotating_collections: RotatingCollections = field(default_factory=RotatingCollections)
+    _article: ArticleMetrics = field(default_factory=ArticleMetrics)
 
     report_interval_secs: int = 10
 
@@ -89,6 +93,9 @@ class _Metrics:
             self._chunks.chunk_diff_unchanged += chunk_diff_unchanged
             self._chunks.chunks_vectorized += chunks_vectorized
 
+    async def update_article(self, redirects: int = 0):
+        async with self._async_lock:
+            self._article.redirects += redirects
 
     async def describe(self, pipeline: AsyncPipeline) -> str:
         now = time.time()
@@ -100,22 +107,22 @@ class _Metrics:
             processing_time: timedelta = timedelta(seconds=now - self._start_secs)
 
             return f"""
-                Total Time (h:mm:s):{processing_time}
-                
+                Processing:
+                    Total Time (h:mm:s):    {processing_time}
                 Wikipedia Listener:      
                     Total events:           {_pprint(self._listener.total_events)}
                     Canary events:          {_pprint(self._listener.canary_events)}
                     Bot events:             {_pprint(self._listener.bot_events)}
                     Skipped events:         {_pprint(self._listener.skipped_events)}
                     enwiki edits:           {_pprint(self._listener.enwiki_edits)}
-                    
+                Articles:
+                    Redirects:              {_pprint(self._article.redirects)}    
                 Chunks: 
                     Chunks created:         {_pprint(self._chunks.chunks_created)}
                     Chunk diff new:         {_pprint(self._chunks.chunk_diff_new)}
                     Chunk diff deleted:     {_pprint(self._chunks.chunk_diff_deleted)}
                     Chunk diff unchanged:   {_pprint(self._chunks.chunk_diff_unchanged)}
                     Chunks vectorized:      {_pprint(self._chunks.chunks_vectorized)}
-                    
                 Database:
                     Rotations:              {_pprint(self._rotating_collections.rotations)}
                     Chunks inserted:        {_pprint(self._database.chunks_inserted)}
@@ -123,7 +130,6 @@ class _Metrics:
                     Chunk collisions:       {_pprint(self._database.chunk_collision)}
                     Articles read:          {_pprint(self._database.articles_read)}
                     Articles inserted:      {_pprint(self._database.articles_inserted)}
-                    
                 Pipeline:
                     {pipeline.queue_depths() if pipeline else ""}
             """
