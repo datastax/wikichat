@@ -68,8 +68,7 @@ async def listen_for_changes(pipeline: AsyncPipeline, args: CommonPipelineArgs) 
             except ClientPayloadError:
                 # see https://github.com/aio-libs/aiohttp/issues/4581
                 # there seems to be no work around for this yet (Jen 2024) so just retry
-                # TODO: change back to debug
-                logging.warning("Error in event source, retrying see https://github.com/aio-libs/aiohttp/issues/4581",
+                logging.debug("Error in event source, retrying see https://github.com/aio-libs/aiohttp/issues/4581",
                                 exc_info=True)
                 pass
     return False
