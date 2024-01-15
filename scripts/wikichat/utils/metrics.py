@@ -34,12 +34,16 @@ class Chunks:
     chunk_diff_unchanged: int = 0
     chunks_vectorized: int = 0
 
+@dataclass
+class RotatingCollections:
+    rotations: int = 0
 
 @dataclass
 class _Metrics:
     _listener: ListenerMetrics = field(default_factory=ListenerMetrics)
     _database: DBMetrics = field(default_factory=DBMetrics)
     _chunks: Chunks = field(default_factory=Chunks)
+    _rotating_collections: RotatingCollections = field(default_factory=RotatingCollections)
 
     report_interval_secs: int = 10
 
@@ -68,6 +72,14 @@ class _Metrics:
             self._database.articles_inserted += articles_inserted
             self._database.articles_read += articles_read
 
+    async def get_rotation_stats(self) -> (int, int):
+        async with self._async_lock:
+            return self._rotating_collections.rotations, self._database.chunks_inserted
+
+    async def update_rotation_stats(self, rotations: int = 0):
+        async with self._async_lock:
+            self._rotating_collections.rotations += rotations
+
     async def update_chunks(self, chunks_created: int = 0, chunk_diff_new: int = 0, chunk_diff_deleted: int = 0,
                             chunk_diff_unchanged: int = 0, chunks_vectorized: int = 0):
         async with self._async_lock:
@@ -76,6 +88,7 @@ class _Metrics:
             self._chunks.chunk_diff_deleted += chunk_diff_deleted
             self._chunks.chunk_diff_unchanged += chunk_diff_unchanged
             self._chunks.chunks_vectorized += chunks_vectorized
+
 
     async def describe(self, pipeline: AsyncPipeline) -> str:
         now = time.time()
@@ -104,6 +117,7 @@ class _Metrics:
                     Chunks vectorized:      {_pprint(self._chunks.chunks_vectorized)}
                     
                 Database:
+                    Rotations:              {_pprint(self._rotating_collections.rotations)}
                     Chunks inserted:        {_pprint(self._database.chunks_inserted)}
                     Chunks deleted:         {_pprint(self._database.chunks_deleted)}
                     Chunk collisions:       {_pprint(self._database.chunk_collision)}

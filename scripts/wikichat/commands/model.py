@@ -17,9 +17,9 @@ class CommonPipelineArgs():
                                     metadata={
                                         "help": 'Truncate the database before starting the pipeline.'})
 
-    rotate_collections_every: int = field(default=False,
+    rotate_collections_every: int = field(default=100000,
                                  metadata={
-                                     "help": "Rotate the database collection every N items, 0 to disable."})
+                                     "help": "Rotate the database collection every N chunks, 0 to disable."})
 
 
 @dataclass_json
