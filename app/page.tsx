@@ -6,9 +6,11 @@ import Footer from '../components/Footer';
 import Configure from '../components/Configure';
 import ThemeButton from '../components/ThemeButton';
 import useConfiguration from './hooks/useConfiguration';
+import useTheme from './hooks/useTheme';
 import PromptSuggestionRow from '../components/PromptSuggestions/PromptSuggestionsRow';
 import { Message } from 'ai';
 import LoadingBubble from '../components/LoadingBubble';
+import Logo from '../components/Logo';
 
 export default function Home() {
   const [suggestions, setSuggestions] = useState([]);
@@ -27,7 +29,8 @@ export default function Home() {
       }
     }
   });
-  const { useRag, llm, similarityMetric, setConfiguration } = useConfiguration();
+  const { theme, setTheme } = useTheme();
+  const { useRag, llm, similarityMetric, setConfiguration, collection } = useConfiguration();
 
   const messagesEndRef = useRef(null);
   const [configureOpen, setConfigureOpen] = useState(false);
@@ -50,7 +53,7 @@ export default function Home() {
 
   const handlePrompt = (promptText) => {
     const msg: Message = { id: crypto.randomUUID(),  content: promptText, role: 'user' };
-    append(msg, { options: { body: { useRag, llm, similarityMetric}}});
+    append(msg, { options: { body: { collection, llm, similarityMetric}}});
   };
 
   return (
@@ -60,13 +63,10 @@ export default function Home() {
         <div className='chatbot-header pb-6'>
           <div className='flex justify-between'>
             <div className='flex items-center gap-2'>
-              <svg width="24" height="25" viewBox="0 0 24 25">
-                <path d="M20 9.96057V7.96057C20 6.86057 19.1 5.96057 18 5.96057H15C15 4.30057 13.66 2.96057 12 2.96057C10.34 2.96057 9 4.30057 9 5.96057H6C4.9 5.96057 4 6.86057 4 7.96057V9.96057C2.34 9.96057 1 11.3006 1 12.9606C1 14.6206 2.34 15.9606 4 15.9606V19.9606C4 21.0606 4.9 21.9606 6 21.9606H18C19.1 21.9606 20 21.0606 20 19.9606V15.9606C21.66 15.9606 23 14.6206 23 12.9606C23 11.3006 21.66 9.96057 20 9.96057ZM7.5 12.4606C7.5 11.6306 8.17 10.9606 9 10.9606C9.83 10.9606 10.5 11.6306 10.5 12.4606C10.5 13.2906 9.83 13.9606 9 13.9606C8.17 13.9606 7.5 13.2906 7.5 12.4606ZM16 17.9606H8V15.9606H16V17.9606ZM15 13.9606C14.17 13.9606 13.5 13.2906 13.5 12.4606C13.5 11.6306 14.17 10.9606 15 10.9606C15.83 10.9606 16.5 11.6306 16.5 12.4606C16.5 13.2906 15.83 13.9606 15 13.9606Z" />
-              </svg>
-              <h1 className='chatbot-text-primary text-xl md:text-2xl font-medium'>WikiChat</h1>
+              <Logo theme={theme} />
             </div>
             <div className='flex gap-1'>
-              <ThemeButton />
+              <ThemeButton theme={theme} setTheme={setTheme} />
               <button onClick={() => setConfigureOpen(true)}>
                 <svg width="24" height="25" viewBox="0 0 24 25" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M19.14 13.4006C19.18 13.1006 19.2 12.7906 19.2 12.4606C19.2 12.1406 19.18 11.8206 19.13 11.5206L21.16 9.94057C21.34 9.80057 21.39 9.53057 21.28 9.33057L19.36 6.01057C19.24 5.79057 18.99 5.72057 18.77 5.79057L16.38 6.75057C15.88 6.37057 15.35 6.05057 14.76 5.81057L14.4 3.27057C14.36 3.03057 14.16 2.86057 13.92 2.86057H10.08C9.83999 2.86057 9.64999 3.03057 9.60999 3.27057L9.24999 5.81057C8.65999 6.05057 8.11999 6.38057 7.62999 6.75057L5.23999 5.79057C5.01999 5.71057 4.76999 5.79057 4.64999 6.01057L2.73999 9.33057C2.61999 9.54057 2.65999 9.80057 2.85999 9.94057L4.88999 11.5206C4.83999 11.8206 4.79999 12.1506 4.79999 12.4606C4.79999 12.7706 4.81999 13.1006 4.86999 13.4006L2.83999 14.9806C2.65999 15.1206 2.60999 15.3906 2.71999 15.5906L4.63999 18.9106C4.75999 19.1306 5.00999 19.2006 5.22999 19.1306L7.61999 18.1706C8.11999 18.5506 8.64999 18.8706 9.23999 19.1106L9.59999 21.6506C9.64999 21.8906 9.83999 22.0606 10.08 22.0606H13.92C14.16 22.0606 14.36 21.8906 14.39 21.6506L14.75 19.1106C15.34 18.8706 15.88 18.5506 16.37 18.1706L18.76 19.1306C18.98 19.2106 19.23 19.1306 19.35 18.9106L21.27 15.5906C21.39 15.3706 21.34 15.1206 21.15 14.9806L19.14 13.4006ZM12 16.0606C10.02 16.0606 8.39999 14.4406 8.39999 12.4606C8.39999 10.4806 10.02 8.86057 12 8.86057C13.98 8.86057 15.6 10.4806 15.6 12.4606C15.6 14.4406 13.98 16.0606 12 16.0606Z" />

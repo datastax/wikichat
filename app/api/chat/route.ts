@@ -68,7 +68,7 @@ const formatVercelMessages = (chatHistory: Message[]) => {
 
 export async function POST(req: Request) {
   try {
-    const {messages, llm} = await req.json();
+    const {messages, llm, collection} = await req.json();
     const previousMessages = messages.slice(0, -1);
     const latestMessage = messages[messages?.length - 1]?.content;
 
@@ -88,7 +88,7 @@ export async function POST(req: Request) {
     const astraConfig: AstraLibArgs = {
       token: ASTRA_DB_APPLICATION_TOKEN,
       endpoint: ASTRA_DB_ENDPOINT,
-      collection: ASTRA_DB_COLLECTION,
+      collection: collection ?? ASTRA_DB_COLLECTION,
       contentKey: "content",
     };
 
