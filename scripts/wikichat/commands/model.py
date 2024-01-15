@@ -30,7 +30,7 @@ class LoadPipelineArgs(CommonPipelineArgs):
                                     "is_file_arg": True,
                                     "help": 'Maximum number of lines to read from the file to start processing.'
                                 })
-    file: str = field(default="data/wiki_links.txt",
+    file: str = field(default="scripts/data/wiki_links.txt",
                       metadata={
                           "is_file_arg": True,
                           "help": 'File of urls, one per line'}
