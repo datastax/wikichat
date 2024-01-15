@@ -18,6 +18,7 @@ class ListenerMetrics:
 @dataclass
 class ArticleMetrics:
     redirects: int = 0
+    zero_vectors: int = 0
     recent_urls: list[str] = field(default_factory=list)
 
 @dataclass
@@ -94,9 +95,10 @@ class _Metrics:
             self._chunks.chunk_diff_unchanged += chunk_diff_unchanged
             self._chunks.chunks_vectorized += chunks_vectorized
 
-    async def update_article(self, redirects: int = 0, recent_url: str=None):
+    async def update_article(self, redirects: int = 0, zero_vectors:int = 0, recent_url: str=None):
         async with self._async_lock:
             self._article.redirects += redirects
+            self._article.zero_vectors += zero_vectors
             if recent_url:
                 self._article.recent_urls.append(recent_url)
 
@@ -108,7 +110,7 @@ class _Metrics:
         def _pprint_urls(urls):
             if not urls:
                 return "None"
-            return ",".join([
+            return " ".join([
                 s.replace("https://en.wikipedia.org/wiki", "")
                 for s in urls
            ])
@@ -141,7 +143,8 @@ Database:
 Pipeline:
     {pipeline.queue_depths() if pipeline else ""}
 Articles:
-    Redirects:              {_pprint(self._article.redirects)}  
+    Skipped - redirect:     {_pprint(self._article.redirects)}  
+    Skipped - zero vector:  {_pprint(self._article.zero_vectors)}
     Recent URLs:            {_pprint_urls(self._article.recent_urls)}  
             """
             self._article.recent_urls.clear()
