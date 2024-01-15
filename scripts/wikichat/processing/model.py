@@ -18,7 +18,6 @@ class ArticleMetadata:
     url: str
     title: str = None
 
-
 @dataclass
 class Article:
     """An article we are going to process, has the metadata and the content scrapped from the source"""

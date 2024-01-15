@@ -18,6 +18,7 @@ class ListenerMetrics:
 @dataclass
 class ArticleMetrics:
     redirects: int = 0
+    recent_urls: list[str] = field(default_factory=list)
 
 @dataclass
 class DBMetrics:
@@ -93,47 +94,58 @@ class _Metrics:
             self._chunks.chunk_diff_unchanged += chunk_diff_unchanged
             self._chunks.chunks_vectorized += chunks_vectorized
 
-    async def update_article(self, redirects: int = 0):
+    async def update_article(self, redirects: int = 0, recent_url: str=None):
         async with self._async_lock:
             self._article.redirects += redirects
+            if recent_url:
+                self._article.recent_urls.append(recent_url)
 
     async def describe(self, pipeline: AsyncPipeline) -> str:
         now = time.time()
 
         def _pprint(x):
             return f"{x:>8} (total) {round(x / processing_time.total_seconds(), 2):>8} (op/s)"
+        def _pprint_urls(urls):
+            if not urls:
+                return "None"
+            return ",".join([
+                s.replace("https://en.wikipedia.org/wiki", "")
+                for s in urls
+           ])
 
         async with self._async_lock:
             processing_time: timedelta = timedelta(seconds=now - self._start_secs)
 
-            return f"""
-                Processing:
-                    Total Time (h:mm:s):    {processing_time}
-                Wikipedia Listener:      
-                    Total events:           {_pprint(self._listener.total_events)}
-                    Canary events:          {_pprint(self._listener.canary_events)}
-                    Bot events:             {_pprint(self._listener.bot_events)}
-                    Skipped events:         {_pprint(self._listener.skipped_events)}
-                    enwiki edits:           {_pprint(self._listener.enwiki_edits)}
-                Articles:
-                    Redirects:              {_pprint(self._article.redirects)}    
-                Chunks: 
-                    Chunks created:         {_pprint(self._chunks.chunks_created)}
-                    Chunk diff new:         {_pprint(self._chunks.chunk_diff_new)}
-                    Chunk diff deleted:     {_pprint(self._chunks.chunk_diff_deleted)}
-                    Chunk diff unchanged:   {_pprint(self._chunks.chunk_diff_unchanged)}
-                    Chunks vectorized:      {_pprint(self._chunks.chunks_vectorized)}
-                Database:
-                    Rotations:              {_pprint(self._rotating_collections.rotations)}
-                    Chunks inserted:        {_pprint(self._database.chunks_inserted)}
-                    Chunks deleted:         {_pprint(self._database.chunks_deleted)}
-                    Chunk collisions:       {_pprint(self._database.chunk_collision)}
-                    Articles read:          {_pprint(self._database.articles_read)}
-                    Articles inserted:      {_pprint(self._database.articles_inserted)}
-                Pipeline:
-                    {pipeline.queue_depths() if pipeline else ""}
+            desc = f"""
+Processing:
+    Total Time (h:mm:s):    {processing_time}
+Wikipedia Listener:      
+    Total events:           {_pprint(self._listener.total_events)}
+    Canary events:          {_pprint(self._listener.canary_events)}
+    Bot events:             {_pprint(self._listener.bot_events)}
+    Skipped events:         {_pprint(self._listener.skipped_events)}
+    enwiki edits:           {_pprint(self._listener.enwiki_edits)}
+Chunks: 
+    Chunks created:         {_pprint(self._chunks.chunks_created)}
+    Chunk diff new:         {_pprint(self._chunks.chunk_diff_new)}
+    Chunk diff deleted:     {_pprint(self._chunks.chunk_diff_deleted)}
+    Chunk diff unchanged:   {_pprint(self._chunks.chunk_diff_unchanged)}
+    Chunks vectorized:      {_pprint(self._chunks.chunks_vectorized)}
+Database:
+    Rotations:              {_pprint(self._rotating_collections.rotations)}
+    Chunks inserted:        {_pprint(self._database.chunks_inserted)}
+    Chunks deleted:         {_pprint(self._database.chunks_deleted)}
+    Chunk collisions:       {_pprint(self._database.chunk_collision)}
+    Articles read:          {_pprint(self._database.articles_read)}
+    Articles inserted:      {_pprint(self._database.articles_inserted)}
+Pipeline:
+    {pipeline.queue_depths() if pipeline else ""}
+Articles:
+    Redirects:              {_pprint(self._article.redirects)}  
+    Recent URLs:            {_pprint_urls(self._article.recent_urls)}  
             """
-
+            self._article.recent_urls.clear()
+            return desc
     async def metrics_reporter_task(self, pipeline: AsyncPipeline, interval_seconds: int = 10):
         try:
             while True:

@@ -246,6 +246,7 @@ async def update_article_metadata(vectored_diff: VectoredChunkedArticleDiff) -> 
         recent_articles
     )
     await METRICS.update_database(articles_inserted=1)
+    await METRICS.update_article(recent_url=new_metadata.article_metadata.url)
 
 
 async def process_article_metadata(pipeline: AsyncPipeline, article_metadata: list[ArticleMetadata]) -> bool:
