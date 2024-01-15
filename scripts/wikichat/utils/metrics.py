@@ -108,7 +108,7 @@ class _Metrics:
         def _pprint_urls(urls):
             if not urls:
                 return "None"
-            return ",".join([
+            return " ".join([
                 s.replace("https://en.wikipedia.org/wiki", "")
                 for s in urls
            ])
