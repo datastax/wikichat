@@ -26,7 +26,6 @@ ASTRA_DB.create_collection(collection_name=_ARTICLE_METADATA_NAME)
 ASTRA_DB.create_collection(collection_name=_ARTICLE_SUGGESTIONS_NAME)
 
 # Create the collection objects this code will use
-# NOTE: For embeddings use the EMBEDDING_COLLECTIONS object instead of these directly
 EMBEDDINGS_COLLECTION = AstraDBCollection(
     collection_name=_ARTICLE_EMBEDDINGS_NAME, astra_db=ASTRA_DB
 )
@@ -39,33 +38,6 @@ SUGGESTIONS_COLLECTION = AstraDBCollection(
 
 _ALL_COLLECTIONS: list[AstraDBCollection] = [EMBEDDINGS_COLLECTION, METADATA_COLLECTION,SUGGESTIONS_COLLECTION]
 _ROTATED_COLLECTIONS: list[AstraDBCollection] = [EMBEDDINGS_COLLECTION, METADATA_COLLECTION]
-
-
-# class _EmbeddingCollections():
-#
-#     def __init__(self, collections: list[AstraDBCollection]):
-#         assert len(collections) > 1, "Must have at least 2 collections"
-#         self._collections = collections
-#         self._current_index = 0
-#         self._lock = asyncio.Lock()
-#
-#     async def rotate(self, async_callback: Callable[[AstraDBCollection, AstraDBCollection], None]) -> None:
-#         async with self._lock:
-#             # locks not re-entrant :(
-#             prev_collection = self._collections[self._current_index]
-#             self._current_index = (self._current_index + 1) % len(self._collections)
-#             current_collection = self._collections[self._current_index]
-#             logging.info(f"Switching to collection from {prev_collection.collection_name} to {current_collection.collection_name}")
-#             await async_callback(prev_collection, current_collection)
-#
-#
-#     async def current(self) -> AstraDBCollection:
-#         async with self._lock:
-#             return self._collections[self._current_index]
-
-#
-# EMBEDDING_COLLECTIONS = _EmbeddingCollections([_EMBEDDING_COLLECTION_RED, _EMBEDDING_COLLECTION_GREEN])
-#
 
 async def truncate_all_collections() -> None:
     for collection in _ALL_COLLECTIONS:
