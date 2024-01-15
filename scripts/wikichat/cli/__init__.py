@@ -46,7 +46,7 @@ class PipelineCommand(CliCommand):
         from wikichat import database
 
         if command_args.truncate_first:
-            database.truncate_all_collections()
+            await database.truncate_all_collections()
 
         pipeline: AsyncPipeline = processing.create_pipeline(max_items=command_args.max_articles,
                                                              rotate_collection_every=command_args.rotate_collections_every)

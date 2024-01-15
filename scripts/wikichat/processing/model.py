@@ -158,17 +158,16 @@ class RecentArticle:
 @dataclass_json
 @dataclass
 class RecentArticles:
-    embedding_collection: str = None
+    embedding_collection: str = "article_embeddings"
     recent_articles: list[RecentArticle] = field(default_factory=list)
     _id: str = "recent_articles"
 
     def __post_init__(self):
         self._lock = asyncio.Lock()
 
-    async def update_and_clone(self, embedding_collection: str,  article: ChunkedArticleMetadataOnly, clear_list: bool=False) -> 'RecentArticles':
+    async def update_and_clone(self, article: ChunkedArticleMetadataOnly, clear_list: bool=False) -> 'RecentArticles':
         max_recent_articles: int = 5
         async with self._lock:
-            self.embedding_collection = embedding_collection
             # allow None because it is called like this when switching collections
             if article is not None:
                 self.recent_articles = [RecentArticle.from_article_metadata(article)] + self.recent_articles[

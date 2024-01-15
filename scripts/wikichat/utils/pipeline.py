@@ -2,20 +2,24 @@ import asyncio
 import contextvars
 import logging
 import sys
-from typing import Callable, Any
+from typing import Callable, Any, Union
 
 # used by the pipeline and the log filter to get the worker name
 WORKER_NAME_CONTEXT_VAR = contextvars.ContextVar('worker_name', default="unknown_worker")
 
+
 class AsyncStep:
 
-    def __init__(self, func: Callable[[Any], Any], num_tasks: int):
+    def __init__(self, func: Callable[[Any], Any], num_tasks: int,
+                 listener: Callable[['AsyncStep', Any], bool] = None):
         self.func: Callable[[Any], Any] = func
         self.name: str = self.func.__name__
         self.num_tasks: int = num_tasks
 
-        self.source: asyncio.Queue = asyncio.Queue()
-        self.dest: asyncio.Queue = asyncio.Queue()
+        self._listener = listener
+
+        self._source: asyncio.Queue = asyncio.Queue()
+        self._next_step: Union['AsyncStep', None] = None
 
         # see start_tasks
         self.tasks = []
@@ -31,36 +35,50 @@ class AsyncStep:
         self.tasks = [asyncio.create_task(self._worker(f"{self.name}-{i}"), name=f"{self.name}-{i}") for i in
                       range(self.num_tasks)]
 
+    async def add_item(self, item: Any) -> bool:
+        await self._source.put(item)
+        return True
+
     async def _worker(self, worker_name: str):
         while True:
-            item = await self.source.get()
+
+            item = await self._source.get()
+            # We call the listener here before passing to the worker.
+            # The listener can decide to not pass the item to the worker, or if somethign should be done
+            # before the worker starts. The listener can use a lock to step all other workers starting until it is done.
+            # listener need to handle async
             context_token = WORKER_NAME_CONTEXT_VAR.set(worker_name)
             try:
+                if self._listener is None:
+                    process_item = True
+                else:
+                    process_item: bool = await self._listener(self, item)
+                if not process_item:
+                    continue
                 result = await self.func(item)
 
-                if result is not None and self.dest:
+                if result is not None and self._next_step:
                     # there is no dest when this is the last step
-                    await self.dest.put(result)
+                    await self._next_step.add_item(result)
             except Exception:
                 logging.exception(f"Error in worker {worker_name}", exc_info=True)
                 sys.exit(1)
             finally:
                 WORKER_NAME_CONTEXT_VAR.reset(context_token)
 
-            self.source.task_done()
+            self._source.task_done()
 
 
 class AsyncPipeline:
-    def __init__(self, max_items: int = 0, listener: Callable[[int], bool] =None):
+    def __init__(self, max_items: int = 0):
         self.steps: list[AsyncStep] = []
         self._put_count: int = 0
         self.max_items: int = max_items
-        self._listener: Callable[[AsyncPipeline, int], bool] = listener
         self._async_lock = asyncio.Lock()
 
     def add_step(self, step: AsyncStep) -> 'AsyncPipeline':
         if self.steps:
-            step.source = self.steps[-1].dest
+            self.steps[-1]._next_step = step
         self.steps.append(step)
         # start now because we may have changed the source queue
         step.start_tasks()
@@ -75,25 +93,21 @@ class AsyncPipeline:
     async def put_to_first_step(self, item: Any) -> bool:
         async with self._async_lock:
             if not self.max_items or self._put_count < self.max_items:
-                if self._listener is not None:
-                    add_item: bool = await self._listener(self, self._put_count)
-                    if not add_item:
-                        return False
+                await self.steps[0].add_item(item)
                 self._put_count += 1
-                await self.steps[0].source.put(item)
                 return True
             else:
                 return False
 
     def queue_depths(self) -> dict[str, int]:
-        return {step.name: step.source.qsize() for step in self.steps}
+        return {step.name: step._source.qsize() for step in self.steps}
 
     async def join_all_steps(self):
         logging.info("Waiting for all step source queues to be empty")
         for step in self.steps:
             # the steps dest is the source for the next step
             logging.info(f"Waiting for step {step.name} source queue to be empty")
-            await step.source.join()
+            await step._source.join()
         logging.info("All step source queues are empty")
         return
 
