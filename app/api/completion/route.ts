@@ -31,21 +31,22 @@ export async function POST(req: Request) {
         {
           projection: {
             "recent_articles.metadata.title" : 1,
-            "recent_articles.suggested_chunks.content" : 1
+            "recent_articles.suggested_chunks.content" : 1,
           },
         });
 
       const suggestionsDocuments = await suggestionsCursor.toArray();
 
       const docsMap = suggestionsDocuments?.map(doc => { 
-        return {
-          title: doc.recent_articles[0].metadata.title, 
-          content: doc.recent_articles[0].suggested_chunks.map(chunk => chunk.content)
-        }
+        return doc.recent_articles.map(article => {
+          return {
+            pageTitle: article.metadata.title,
+            content: article.suggested_chunks.map(chunk => chunk.content)
+          }
+        })
       });
-      
-      docContext = JSON.stringify(docsMap);
 
+      docContext = JSON.stringify(docsMap);
     } catch (e) {
       console.log("Error querying db...");
     }
@@ -59,7 +60,7 @@ export async function POST(req: Request) {
           role: "user",
           content: `You are an assistant who creates sample questions to ask a chatbot.
           Given the context below of the most recently added data to the most popular pages on Wikipedia come up with 4 suggested questions
-          Make the suggested questions on a variety of topics and keep them to less than 12 words each
+          Only write one question per page and keep them to less than 12 words each
 
           START CONTEXT
           ${docContext}
