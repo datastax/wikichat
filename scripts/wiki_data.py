@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os
 from logging.handlers import RotatingFileHandler
 
 from wikichat import cli
@@ -48,7 +49,9 @@ if __name__ == "__main__":
     _config_logging()
     parser = cli.config_arg_parse()
 
-    args = parser.parse_args()
+    env_cmd = os.getenv("COMMAND_LINE")
+    cmds = env_cmd.split(" ") if env_cmd else None
+    args = parser.parse_args(args=cmds)
 
     if not hasattr(args, "command_def"):
         parser.print_help()
