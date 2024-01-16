@@ -1,5 +1,6 @@
 import asyncio
 import contextvars
+import json
 import logging
 import sys
 from typing import Callable, Any, Union
@@ -17,6 +18,7 @@ class AsyncStep:
         self.num_tasks: int = num_tasks
 
         self._listener = listener
+        self._error_listener: Callable[[Exception], None] = None
 
         self._source: asyncio.Queue = asyncio.Queue()
         self._next_step: Union['AsyncStep', None] = None
@@ -61,10 +63,15 @@ class AsyncStep:
                     # there is no dest when this is the last step
                     await self._next_step.add_item(result)
             except Exception as e:
-                logging.exception(f"Error in worker, item will be dropped - {e}")
+                logging.exception(f"Error in worker, item will be dropped - {e}", exc_info=False)
                  # Second log is to get the details into the debug so we can fix, first is to get it into
                 # heroku or other log aggregators
                 logging.debug(f"Error in worker {worker_name}", exc_info=True)
+                if self._error_listener:
+                    try:
+                        await self._error_listener(e)
+                    except Exception as e2:
+                        logging.exception(f"Error in error listener - {e2}", exc_info=False)
             finally:
                 WORKER_NAME_CONTEXT_VAR.reset(context_token)
 
@@ -72,15 +79,17 @@ class AsyncStep:
 
 
 class AsyncPipeline:
-    def __init__(self, max_items: int = 0):
+    def __init__(self, max_items: int = 0, error_listener: Callable[[Exception], None] = None):
         self.steps: list[AsyncStep] = []
         self._put_count: int = 0
         self.max_items: int = max_items
+        self._error_listener = error_listener
         self._async_lock = asyncio.Lock()
 
     def add_step(self, step: AsyncStep) -> 'AsyncPipeline':
         if self.steps:
             self.steps[-1]._next_step = step
+        step._error_listener = self._error_listener
         self.steps.append(step)
         # start now because we may have changed the source queue
         step.start_tasks()
