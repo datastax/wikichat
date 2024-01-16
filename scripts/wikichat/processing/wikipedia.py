@@ -33,8 +33,9 @@ async def scrape_article(meta: ArticleMetadata) -> Article | None:
                     logging.error(
                         f"Continuing after error fetching {meta.url}, unexpected status code {response.status}")
                     return None
-        except aiohttp.ClientError:
-            logging.error(f"Continuing after error fetching {meta.url}", exc_info=True)
+        except aiohttp.ClientError as e:
+            logging.error(f"Continuing after error fetching {meta.url} - {e}")
+            logging.debug(f"Continuing after error fetching {meta.url}", exc_info=True)
             return None
 
     # lxml is faster but html5lib is more lenient with broken HTML.
