@@ -3,7 +3,7 @@ import asyncio
 import logging
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from dataclasses import dataclass, fields, MISSING
-from typing import Callable, Any
+from typing import Callable, Any, Union
 
 from wikichat.commands import model
 from wikichat.utils.metrics import METRICS
@@ -14,7 +14,7 @@ class CliCommand:
     name: str
     help: str
     func_supplier: Callable
-    args_cls: type = None
+    args_cls: Union[type, None] = None
 
     async def run(self, args: argparse.Namespace):
         kwargs = vars(args)
@@ -90,6 +90,9 @@ def _suggested_articles() -> Callable:
     from wikichat.commands import database
     return database.suggested_articles
 
+def _suggested_search() -> Callable:
+    from wikichat.commands import database
+    return database.suggested_search
 
 
 ALL_COMMANDS: list[CliCommand] = [
@@ -120,13 +123,18 @@ ALL_COMMANDS: list[CliCommand] = [
         name="suggested-articles",
         help="Get chunks for suggested articles based on recent articles",
         func_supplier=_suggested_articles,
-        args_cls=None)
+        args_cls=None),
+    CliCommand(
+        name="suggested-search",
+        help="Run ANN search based on suggested articles in DB",
+        func_supplier=_suggested_search,
+        args_cls=model.SuggestedSearchArgs)
 ]
 
 
 def _add_command_args(args_cls, parser: ArgumentParser) -> ArgumentParser:
     if not args_cls:
-        return
+        return parser
 
     for arg_field in fields(args_cls):
         if not arg_field.init:
