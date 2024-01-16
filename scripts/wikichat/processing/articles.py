@@ -143,10 +143,13 @@ async def vectorize_diff(article_diff: ChunkedArticleDiff) -> VectoredChunkedArt
 
 
 async def store_article_diff(article_diff: VectoredChunkedArticleDiff) -> VectoredChunkedArticleDiff:
-
+    # HACK - update the meta data first, if there is an error we will fail before we insert the chunks
+    # this is not ideal, but I think it will reduce the amount of chunk collisions under load
+    # of course, no errors would be better but baby steps
+    await update_article_metadata(article_diff)
     await insert_vectored_chunks(article_diff.new_chunks)
     await delete_vectored_chunks(article_diff.deleted_chunks)
-    await update_article_metadata(article_diff)
+
     return article_diff
 
 
