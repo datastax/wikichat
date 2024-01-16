@@ -37,8 +37,10 @@ export async function POST(req: Request) {
 
       const suggestionsDocuments = await suggestionsCursor.toArray();
 
-      const docsMap = suggestionsDocuments?.map(doc => { 
-        return doc.recent_articles.map(article => {
+      const docsMap = suggestionsDocuments?.map((doc, index) => {
+        if (index > 3) return; 
+        return doc.recent_articles.map((article, index) => {
+          if (index > 2) return;
           return {
             pageTitle: article.metadata.title,
             content: article.suggested_chunks.map(chunk => chunk.content)
@@ -60,7 +62,7 @@ export async function POST(req: Request) {
           role: "user",
           content: `You are an assistant who creates sample questions to ask a chatbot.
           Given the context below of the most recently added data to the most popular pages on Wikipedia come up with 4 suggested questions
-          Only write one question per page and keep them to less than 12 words each
+          Only write no more than one question per page and keep them to less than 12 words each
 
           START CONTEXT
           ${docContext}
