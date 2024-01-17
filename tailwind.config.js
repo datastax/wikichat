@@ -13,7 +13,7 @@ module.exports = {
         sans: ["var(--font-geist-sans)"],
       },
       screens: {
-        origin: "800px",
+        origin: "1200px",
       },
     },
   },
