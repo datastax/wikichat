@@ -181,7 +181,7 @@ async def insert_vectored_chunks(vectored_chunks: list[VectoredChunk]) -> None:
         errors = resp.get("errors", [])
         exists_errors = [error for error in errors if error.get("errorCode") == "DOCUMENT_ALREADY_EXISTS"]
         if exists_errors:
-            logging.warning(
+            logging.debug(
                 f"Got {len(exists_errors)} DOCUMENT_ALREADY_EXISTS errors, ignoring. Chunks {exists_errors}")
             await METRICS.update_database(chunk_collision=len(exists_errors))
 
