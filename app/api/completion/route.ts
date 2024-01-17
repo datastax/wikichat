@@ -38,9 +38,7 @@ export async function POST(req: Request) {
       const suggestionsDocuments = await suggestionsCursor.toArray();
 
       const docsMap = suggestionsDocuments?.map((doc, index) => {
-        if (index > 3) return; 
         return doc.recent_articles.map((article, index) => {
-          if (index > 2) return;
           return {
             pageTitle: article.metadata.title,
             content: article.suggested_chunks.map(chunk => chunk.content)
@@ -55,7 +53,7 @@ export async function POST(req: Request) {
 
     const response = await openai.chat.completions.create(
       {
-        model: "gpt-3.5-turbo",
+        model: "gpt-3.5-turbo-16k",
         stream: true,
         temperature: 1.5,
         messages: [{
@@ -63,6 +61,7 @@ export async function POST(req: Request) {
           content: `You are an assistant who creates sample questions to ask a chatbot.
           Given the context below of the most recently added data to the most popular pages on Wikipedia come up with 4 suggested questions
           Only write no more than one question per page and keep them to less than 12 words each
+          Do not label which page the question is for/from
 
           START CONTEXT
           ${docContext}

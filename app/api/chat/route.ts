@@ -24,11 +24,11 @@ if (BUGSNAG_API_KEY) {
   Bugsnag.start({ apiKey: BUGSNAG_API_KEY })
 }
 
-const Template = `You are an AI assistant answering questions about anything from Wikipedia the context will provide you with the most relevant page data along with the source page's title and URL.
-Refer to the context as Wikipedia data. Format responses using markdown where applicable and don't return images.
+const Template = `You are an AI assistant answering questions about anything from Wikipedia the context will provide you with the most relevant data from wikipedia including the pages title, url, and page content.
 If referencing the text/context refer to it as Wikipedia.
-At the end of the response on a line by itself add one markdown link to the Wikipedia URL where the most relevant data was found label it with the title of the Wikipedia page and no "Source:" or "Wikipedia" prefix or other text.
-The max links you should include is 1, refer to this source as "the source below".
+At the end of the response add one markdown link using the format: [Title](URL) and replace the title and url with the associated title and url of the more relavant page from the context
+This link will not be shown to the user so do not mention it.
+The max links you can include is 1, do not provide any other references or annotations.
 if the context is empty, answer it to the best of your ability. If you cannot find the answer user's question in the context, reply with "I'm sorry, I'm only allowed to answer questions related to the top 1,000 Wikipedia pages".
 
 <context>
@@ -45,8 +45,7 @@ QUESTION: {question}
 const prompt = PromptTemplate.fromTemplate(Template);
 
 const combineDocumentsFn = (docs: Document[]) => {
-  const serializedDocs = docs.map((doc) => `
-Title: ${doc.metadata.title}
+  const serializedDocs = docs.map((doc) => `Title: ${doc.metadata.title}
 URL: ${doc.metadata.url}
 Content: ${doc.pageContent}`);
 
