@@ -1,7 +1,12 @@
 import Bugsnag from "@bugsnag/js";
 import { CohereEmbeddings } from "@langchain/cohere";
 import { Document } from "@langchain/core/documents";
-import { RunnableSequence } from "@langchain/core/runnables";
+import { 
+  RunnableBranch,
+  RunnableLambda,
+  RunnableMap, 
+  RunnableSequence
+} from "@langchain/core/runnables";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import {
   AstraDBVectorStore,
@@ -24,7 +29,25 @@ if (BUGSNAG_API_KEY) {
   Bugsnag.start({ apiKey: BUGSNAG_API_KEY })
 }
 
-const Template = `You are an AI assistant answering questions about anything from Wikipedia the context will provide you with the most relevant data from wikipedia including the pages title, url, and page content.
+interface ChainInut {
+  chat_history: string;
+  question: string;
+}
+
+const condenseQuestionTemplate = `Given the following chat history and a follow up question, If the follow up question references previous parts of the chat rephrase the follow up question to be a standalone question if not use the follow up question as the standalone question.
+
+<chat_history>
+  {chat_history}
+</chat_history>
+
+Follow Up Question: {question}
+Standalone question:`;
+
+const condenseQuestionPrompt = PromptTemplate.fromTemplate(
+  condenseQuestionTemplate,
+);
+
+const questionTemplate = `You are an AI assistant answering questions about anything from Wikipedia the context will provide you with the most relevant data from wikipedia including the pages title, url, and page content.
 If referencing the text/context refer to it as Wikipedia.
 At the end of the response add one markdown link using the format: [Title](URL) and replace the title and url with the associated title and url of the more relavant page from the context
 This link will not be shown to the user so do not mention it.
@@ -35,14 +58,10 @@ if the context is empty, answer it to the best of your ability. If you cannot fi
   {context}
 </context>
 
-<chat_history>
-  {chat_history}
-</chat_history>
-
 QUESTION: {question}  
 `;
 
-const prompt = PromptTemplate.fromTemplate(Template);
+const prompt = PromptTemplate.fromTemplate(questionTemplate);
 
 const combineDocumentsFn = (docs: Document[]) => {
   const serializedDocs = docs.map((doc) => `Title: ${doc.metadata.title}
@@ -97,19 +116,43 @@ export async function POST(req: Request) {
 
     const retriever = vectorStore.asRetriever(10);
 
-    const chain = RunnableSequence.from([
+    const hasChatHistoryCheck = RunnableLambda.from(
+      (input: ChainInut) => input.chat_history.length > 0
+    );
+
+    const retrieverChain = retriever.pipe(combineDocumentsFn).withConfig({ runName: "retrieverChain"});
+
+    const chatHistoryQuestionChain = RunnableSequence.from([
       {
-        context: RunnableSequence.from([
-          (input) => input.question,
-          retriever.pipe(combineDocumentsFn),
-        ]),
-        chat_history: (input) => input.chat_history,
-        question: (input) => input.question,
+        question: (input: ChainInut) => input.question,
+        chat_history: (input: ChainInut) => input.chat_history,
       },
+      condenseQuestionPrompt,
+      chatModel,
+      new StringOutputParser(),
+    ]).withConfig({ runName: "chatHistoryQuestionChain"});
+
+    const noChatHistoryQuestionChain = RunnableLambda.from(
+      (input: ChainInut) => input.question
+    ).withConfig({ runName: "noChatHistoryQuestionChain"});
+
+    const condenseChatBranch = RunnableBranch.from([
+      [hasChatHistoryCheck, chatHistoryQuestionChain],
+      noChatHistoryQuestionChain,
+    ]).withConfig({ runName: "condenseChatBranch"});
+
+    const mapQuestionAndContext = RunnableMap.from({
+      question: (input: string) => input,
+      context: retrieverChain
+    }).withConfig({ runName: "mapQuestionAndContext"});
+
+    const chain = RunnableSequence.from([
+      condenseChatBranch,
+      mapQuestionAndContext,
       prompt,
       chatModel,
       new StringOutputParser(),
-    ])
+    ]).withConfig({ runName: "chatChain"});
 
     const stream = await chain.stream({
       chat_history: formatVercelMessages(previousMessages),
