@@ -17,16 +17,15 @@ export default function Home() {
   const { append, messages, isLoading, input, handleInputChange, handleSubmit } = useChat();
   const { complete } = useCompletion({
     onFinish: (prompt, completion) => {
-      if (Array.isArray(completion)) {
-        setSuggestions(completion);
-      } else {
-        const cleanCompletion = completion.replace(/\[|\]/g, '').trim();
-        const suggestionsArr = cleanCompletion.split('\n').map(item => item.replace(/(^\d+[.)]\s+)|(^-\s+)/gm, '').trim());
-        const cleanArr = suggestionsArr.filter((value) => {
-          return value.trim() !== "" && value.trim() !== "\n";
-        });
-        setSuggestions(cleanArr);
-      }
+      const parsed = JSON.parse(completion);
+      const argsObj = JSON.parse(parsed?.function_call.arguments);
+      const questions = argsObj.questions;
+
+      const questionsArr = [];
+      questions.forEach(q => {
+        questionsArr.push(q.question);
+      });
+      setSuggestions(questionsArr);
     }
   });
   const { theme, setTheme } = useTheme();
