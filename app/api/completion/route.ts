@@ -2,6 +2,7 @@ import Bugsnag from "@bugsnag/js";
 import { AstraDB } from "@datastax/astra-db-ts";
 import { OpenAIStream, StreamingTextResponse } from "ai";
 import OpenAI from "openai";
+import type { ChatCompletionCreateParams } from 'openai/resources/chat';
 
 const {
   ASTRA_DB_APPLICATION_TOKEN,
@@ -51,6 +52,40 @@ export async function POST(req: Request) {
       console.log("Error querying db...");
     }
 
+
+    const functions: ChatCompletionCreateParams.Function[] = [
+
+      {
+        name: 'get_suggestion_and_category',
+        description: 'Prints a suggested question and the category it belongs to.',
+        parameters: {
+          type: 'object',
+          properties: {
+            questions: {
+              type: 'array',
+              description: 'The suggested questions and their categories.',
+              items: {
+                type: 'object',
+                properties: {
+                  category: {
+                    type: 'string',
+                    enum: ['history', 'science', 'sports', 'technology', 'arts', 'culture', 'geography', 'entertainment', 'politics', 'business', 'health'],
+                    description: 'The category of the suggested question.',
+                  },
+                  question: {
+                    type: 'string',
+                    description:
+                      'The suggested question.',
+                  },
+                },
+              },
+            },
+          },
+          required: ['questions'],
+        },
+      },
+    ];
+
     const response = await openai.chat.completions.create(
       {
         model: "gpt-3.5-turbo-16k",
@@ -68,6 +103,7 @@ export async function POST(req: Request) {
           END CONTEXT
           `,
         }],
+        functions
       }
     );
     const stream = OpenAIStream(response);
