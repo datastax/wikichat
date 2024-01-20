@@ -7,13 +7,13 @@ import Configure from '../components/Configure';
 import ThemeButton from '../components/ThemeButton';
 import useConfiguration from './hooks/useConfiguration';
 import useTheme from './hooks/useTheme';
-import PromptSuggestionRow from '../components/PromptSuggestions/PromptSuggestionsRow';
+import PromptSuggestionRow, { PromptSuggestion } from '../components/PromptSuggestions/PromptSuggestionsRow';
 import { Message } from 'ai';
 import LoadingBubble from '../components/LoadingBubble';
 import Logo from '../components/Logo';
 
 export default function Home() {
-  const [suggestions, setSuggestions] = useState([]);
+  const [suggestions, setSuggestions] = useState<PromptSuggestion[]>([]);
   const { append, messages, isLoading, input, handleInputChange, handleSubmit } = useChat();
   const { complete } = useCompletion({
     onFinish: (prompt, completion) => {
@@ -21,9 +21,9 @@ export default function Home() {
       const argsObj = JSON.parse(parsed?.function_call.arguments);
       const questions = argsObj.questions;
 
-      const questionsArr = [];
+      const questionsArr: PromptSuggestion[] = [];
       questions.forEach(q => {
-        questionsArr.push(q.question);
+        questionsArr.push(q);
       });
       setSuggestions(questionsArr);
     }

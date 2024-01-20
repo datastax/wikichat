@@ -1,17 +1,25 @@
+import { CategoryType } from "../../utils/consts";
 import PromptSuggestionButton from "./PromptSuggestionButton";
 
-const PromptSuggestionRow = ({ prompts, onPromptClick }) => {
-  // const prompts = [
-  //   "Who is the 2023 Time's Person of the Year?",
-  //   'Where does Messi play and how much does he make?',
-  //   'When was Twitter renamed to X?',
-  //   "What is the status of the next Star Wars films?",
-  // ];
+export interface PromptSuggestion {
+  category: CategoryType;
+  question: string;
+}
+interface Props {
+  prompts: PromptSuggestion[];
+  onPromptClick: (prompt: string) => void;
+}
 
+const PromptSuggestionRow = ({ prompts, onPromptClick }: Props) => {
   return (
-    <div className="flex flex-row flex-wrap justify-start items-center py-4 gap-2">
+    <div className="flex flex-row justify-center items-center py-4 gap-2">
       {prompts && prompts?.map((prompt, index) => (
-        <PromptSuggestionButton key={`suggestion-${index}`} text={prompt} onClick={() => onPromptClick(prompt)} />
+        <PromptSuggestionButton 
+          key={`suggestion-${index}`}
+          category={prompt.category}
+          question={prompt.question}
+          onClick={() => onPromptClick(prompt.question)}
+        />
       ))}
     </div>
   );

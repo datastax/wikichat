@@ -29,7 +29,7 @@ if (BUGSNAG_API_KEY) {
   Bugsnag.start({ apiKey: BUGSNAG_API_KEY })
 }
 
-interface ChainInut {
+interface ChainInput {
   chat_history: string;
   question: string;
 }
@@ -114,26 +114,23 @@ export async function POST(req: Request) {
 
     await vectorStore.initialize();
 
-    const retriever = vectorStore.asRetriever(10);
+    const astraRetriever = vectorStore.asRetriever(10);
 
     const hasChatHistoryCheck = RunnableLambda.from(
-      (input: ChainInut) => input.chat_history.length > 0
-    );
+      (input: ChainInput) => input.chat_history.length > 0
+    ).withConfig({ runName: "hasChatHistoryCheck"});
 
-    const retrieverChain = retriever.pipe(combineDocumentsFn).withConfig({ runName: "retrieverChain"});
+    const astraRetrieverChain = astraRetriever.pipe(combineDocumentsFn)
+      .withConfig({ runName: "astraRetrieverChain"});
 
     const chatHistoryQuestionChain = RunnableSequence.from([
-      {
-        question: (input: ChainInut) => input.question,
-        chat_history: (input: ChainInut) => input.chat_history,
-      },
       condenseQuestionPrompt,
       chatModel,
       new StringOutputParser(),
     ]).withConfig({ runName: "chatHistoryQuestionChain"});
 
     const noChatHistoryQuestionChain = RunnableLambda.from(
-      (input: ChainInut) => input.question
+      (input: ChainInput) => input.question
     ).withConfig({ runName: "noChatHistoryQuestionChain"});
 
     const condenseChatBranch = RunnableBranch.from([
@@ -143,7 +140,7 @@ export async function POST(req: Request) {
 
     const mapQuestionAndContext = RunnableMap.from({
       question: (input: string) => input,
-      context: retrieverChain
+      context: astraRetrieverChain
     }).withConfig({ runName: "mapQuestionAndContext"});
 
     const chain = RunnableSequence.from([
