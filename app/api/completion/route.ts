@@ -3,6 +3,7 @@ import { AstraDB } from "@datastax/astra-db-ts";
 import { OpenAIStream, StreamingTextResponse } from "ai";
 import OpenAI from "openai";
 import type { ChatCompletionCreateParams } from 'openai/resources/chat';
+import { CATEGORIES } from "../../../utils/consts";
 
 const {
   ASTRA_DB_APPLICATION_TOKEN,
@@ -69,7 +70,7 @@ export async function POST(req: Request) {
                 properties: {
                   category: {
                     type: 'string',
-                    enum: ['history', 'science', 'sports', 'technology', 'arts', 'culture', 'geography', 'entertainment', 'politics', 'business', 'health'],
+                    enum: CATEGORIES,
                     description: 'The category of the suggested question.',
                   },
                   question: {
