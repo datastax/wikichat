@@ -38,13 +38,17 @@
     --primary: var(--neutral-900);
     --primary-hover: var(--neutral-800);
     --inverse: var(--white);
+
+    --sky: #C2D7FE;
+    --bubblegum: #F7BED2;
+    --turf: #C0E472;
+    --lemon: #FFE9A3;
+    --poppy: #FFB5AB;
+    --surf: #92ECD5;
+    --mushroom: #B388FF;
     --gray: #E3E4E5;
-    --purple: #C597FF;
-    --pink: #FF92C1;
-    --green: #41E6A6;
-    --blue: #57F5FF;
-    --orange: #F6A773;
-    --yellow: #FFF282;
+
+    --link: var(--mushroom);
   }
 
   :root.dark {
@@ -67,13 +71,17 @@
     --primary: var(--white);
     --primary-hover: var(--neutral-50);
     --inverse: var(--neutral-900);
+
+    --sky: #384BCA;
+    --bubblegum: #804785;
+    --turf: #127D36;
+    --lemon: #A65F19;
+    --poppy: #B53A29;
+    --surf: #006270;
+    --mushroom: #58209B;
     --gray: #171818;
-    --purple: #4A148C;
-    --pink: #760843;
-    --green: #004D40;
-    --blue: #1A237E;
-    --orange: #3E2723;
-    --yellow: #605603;
+
+    --link: var(--bubblegum);
   }
 
   *,
@@ -291,34 +299,34 @@
 
   /* category backgrounds */
   .history {
-    background-color: var(--blue);
+    background-color: var(--sky);
   }
   .science {
-    background-color: var(--yellow);
+    background-color: var(--bubblegum);
   }
   .technology {
-    background-color: var(--purple);
+    background-color: var(--turf);
   }
   .arts_and_culture {
-    background-color: var(--orange);
+    background-color: var(--lemon);
   }
   .geography {
-    background-color: var(--green);
+    background-color: var(--poppy);
   }
   .philosophy_and_religion {
-    background-color: var(--pink);
+    background-color: var(--surf);
   }
   .society_and_politics {
-    background-color: var(--blue);
+    background-color: var(--mushroom);
   }
   .health_and_medicine {
-    background-color: var(--purple);
+    background-color: var(--sky);
   }
   .business_and_economics {
-    background-color: var(--yellow);
+    background-color: var(--lemon);
   }
   .sports_and_games {
-    background-color: var(--orange);
+    background-color: var(--poppy);
   }
   .custom {
     background-color: var(--gray);

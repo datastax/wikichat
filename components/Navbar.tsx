@@ -93,7 +93,7 @@ const Navbar = ({ useRag, llm, similarityMetric, setConfiguration, theme, setThe
           Simply type your questions or requests in a clear and concise manner.<br></br>
           Responses are sourced from{' '}
           <a
-              className='text-purple'
+              className='text-link'
               href="https://en.wikipedia.org/wiki/Wikipedia:Popular_pages#Top-100_list"
               rel="noreferrer noopener"
               target="_blank"
