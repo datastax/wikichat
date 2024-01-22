@@ -18,9 +18,7 @@ export default function Home() {
   const { complete } = useCompletion({
     onFinish: (prompt, completion) => {
       const parsed = JSON.parse(completion);
-      const argsObj = JSON.parse(parsed?.function_call.arguments);
-      const questions = argsObj.questions;
-
+      const questions = parsed?.questions;
       const questionsArr: PromptSuggestion[] = [];
       questions.forEach(q => {
         questionsArr.push(q);
