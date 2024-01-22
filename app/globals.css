@@ -99,6 +99,10 @@ body {
   border: 1px solid var(--border-primary);
 }
 
+.chatbot-input-icon {
+  color: var(--text-primary-inverse);
+}
+
 .chatbot-input::placeholder {
   color: var(--text-secondary);
 }

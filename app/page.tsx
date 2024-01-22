@@ -108,7 +108,7 @@ export default function Home() {
               placeholder='Send a message...'
               value={input}
             />
-            <button type="submit" className='absolute end-3 bottom-2.5'>
+            <button type="submit" className='chatbot-input-icon absolute end-3 bottom-2.5'>
               <Send size={20} />
             </button>
           </div>
