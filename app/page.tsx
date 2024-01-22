@@ -26,7 +26,7 @@ export default function Home() {
       setSuggestions(questionsArr);
     }
   });
-  const { theme, setTheme } = useTheme();
+  const { category, setCategory, theme, setTheme } = useTheme();
   const { useRag, llm, similarityMetric, setConfiguration, collection } = useConfiguration();
 
   const messagesEndRef = useRef(null);
@@ -55,7 +55,7 @@ export default function Home() {
 
   return (
     <>
-    <main className="flex h-screen flex-col items-center justify-center">
+    <main className={`${category} flex h-screen flex-col items-center justify-center`}>
       <section className='chatbot-section flex flex-col origin:w-[1200px] w-full origin:h-[800px] h-full rounded-md p-2 md:p-6'>
         <div className='chatbot-header pb-6'>
           <div className='flex justify-between'>
@@ -91,7 +91,7 @@ export default function Home() {
           </div>
         </div>
         {!messages || messages.length === 0 && (
-          <PromptSuggestionRow prompts={suggestions} onPromptClick={handlePrompt} />
+          <PromptSuggestionRow prompts={suggestions} onPromptClick={handlePrompt} setCategory={setCategory} />
         )}
         <form className='flex h-[40px] gap-2' onSubmit={handleSend}>
           <input onChange={handleInputChange} value={input} className='chatbot-input flex-1 text-sm md:text-base outline-none bg-transparent rounded-full p-2' placeholder='Send a message...' />

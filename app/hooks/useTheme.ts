@@ -1,9 +1,11 @@
 "use client"
 
 import { useState, useEffect } from 'react';
+import { CategoryType } from '../../utils/consts';
 
 const useTheme = () => {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [category, setCategory] = useState<CategoryType | 'custom'>('custom');
 
   useEffect(() => {
     const getLocalValue = (): 'light' | 'dark' => {
@@ -38,6 +40,8 @@ const useTheme = () => {
   return {
     theme,
     setTheme,
+    category,
+    setCategory,
   };
 }
 
