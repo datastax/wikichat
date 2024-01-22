@@ -107,7 +107,11 @@
     color: var(--text-primary-inverse);
   }
 
-  .chatbot-text-secondary {
+  .chatbot-input-icon {
+    color: var(--text-primary-inverse);
+  }
+
+  .chatbot-input::placeholder {
     color: var(--text-secondary);
   }
 

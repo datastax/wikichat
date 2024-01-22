@@ -5,6 +5,7 @@ This project is a starter for creating a chatbot using Astra DB. It's designed t
 ## Features
 
 - **Astra DB Integration**: Store and retrieve data from your Astra DB database with ease.
+- **LangChain.js Integration**: Uses the new Astra DB vectorstore to implement RAG.
 - **Easy Deployment**: Deploy your chatbot to Vercel with just a few clicks.
 - **Customizable**: Modify and extend the chatbot to suit your needs.
 
@@ -14,6 +15,8 @@ This project is a starter for creating a chatbot using Astra DB. It's designed t
 
 - An Astra DB account. You can [create one here](https://astra.datastax.com/register).
     - An Astra Vector Database
+- An OpenAI Account and API key.
+- A Cohere Account and API key.
 
 ### Setup
 
@@ -23,7 +26,9 @@ This project is a starter for creating a chatbot using Astra DB. It's designed t
     - `ASTRA_DB_ENDPOINT`: Your Astra DB vector database id **_in a vector-enabled DB_**
     - `ASTRA_DB_APPLICATION_TOKEN`: The generated app token for your Astra database
         - To create a new token go to your database's `Connect` tab and click `Generate Token`. (your Application Token begins with `AstraCS:...`)
-4. Populate your database with sample data by running `npm run seed` in your terminal.
+    - `OPENAI_API_KEY`: Your OpenAI API key.
+    - `COHERE_API_KEY`: Your Cohere API key for embeddings.
+4. Populate your database by following the instructions [here](https://github.com/datastax/wikichat/blob/main/scripts/README.md)
 
 ### Running the Project
 
@@ -33,6 +38,6 @@ To start the development server, run `npm run dev` in your terminal. Open [http:
 
 You can easily deploy your chatbot to Vercel by clicking the button below:
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/datastax/wikichat&env=ASTRA_DB_NAMESPACE,OPENAI_API_KEY,ASTRA_DB_ID,ASTRA_DB_REGION,ASTRA_DB_APPLICATION_TOKEN)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/datastax/wikichat&env=ASTRA_DB_ENDPOINT,ASTRA_DB_APPLICATION_TOKEN,OPENAI_API_KEY,COHERE_API_KEY)
 
 Remember to set your environment variables to the values obtained when setting up your Astra DB and OpenAI accounts.

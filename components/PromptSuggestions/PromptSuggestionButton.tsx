@@ -26,7 +26,7 @@ const categoryIcon = (category: CategoryType) => {
       return <Search />;
     case 'technology':
       return <Cpu />;
-    case 'arts_and_culture':
+    case 'arts_and_entertainment':
       return <Palette />;
     case 'sports_and_games':
       return <Joystick />;
