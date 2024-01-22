@@ -1,6 +1,5 @@
 import Bugsnag from "@bugsnag/js";
 import { AstraDB } from "@datastax/astra-db-ts";
-import { OpenAIStream, StreamingTextResponse } from "ai";
 import OpenAI from "openai";
 import type { ChatCompletionCreateParams } from 'openai/resources/chat';
 import { CATEGORIES } from "../../../utils/consts";
@@ -90,7 +89,6 @@ export async function POST(req: Request) {
     const response = await openai.chat.completions.create(
       {
         model: "gpt-3.5-turbo-16k",
-        stream: true,
         temperature: 1.5,
         messages: [{
           role: "user",
@@ -107,9 +105,8 @@ export async function POST(req: Request) {
         functions
       }
     );
-    const stream = OpenAIStream(response);
 
-    return new StreamingTextResponse(stream);
+    return new Response(response.choices[0].message.function_call.arguments);
   } catch (e) {
     if (BUGSNAG_API_KEY) {
       Bugsnag.notify(e);

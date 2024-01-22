@@ -120,9 +120,6 @@ export async function POST(req: Request) {
       (input: ChainInput) => input.chat_history.length > 0
     ).withConfig({ runName: "hasChatHistoryCheck"});
 
-    const astraRetrieverChain = astraRetriever.pipe(combineDocumentsFn)
-      .withConfig({ runName: "astraRetrieverChain"});
-
     const chatHistoryQuestionChain = RunnableSequence.from([
       condenseQuestionPrompt,
       chatModel,
@@ -137,6 +134,9 @@ export async function POST(req: Request) {
       [hasChatHistoryCheck, chatHistoryQuestionChain],
       noChatHistoryQuestionChain,
     ]).withConfig({ runName: "condenseChatBranch"});
+
+    const astraRetrieverChain = astraRetriever.pipe(combineDocumentsFn)
+      .withConfig({ runName: "astraRetrieverChain"});
 
     const mapQuestionAndContext = RunnableMap.from({
       question: (input: string) => input,
