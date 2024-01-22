@@ -3,7 +3,7 @@ export const CATEGORIES = [
   'science',
   'sports_and_games',
   'technology',
-  'arts_and_culture',
+  'arts_and_entertainment',
   'philosophy_and_religion',
   'geography',
   'society_and_politics',

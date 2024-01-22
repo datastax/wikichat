@@ -28,7 +28,7 @@ export default function Home() {
     }
   });
   const { category, setCategory, theme, setTheme } = useTheme();
-  const { useRag, llm, similarityMetric, setConfiguration, collection } = useConfiguration();
+  const { useRag, llm, similarityMetric, setConfiguration } = useConfiguration();
 
   const messagesEndRef = useRef(null);
   const [configureOpen, setConfigureOpen] = useState(false);
@@ -46,12 +46,12 @@ export default function Home() {
   }, [messages]);
 
   const handleSend = (e) => {
-    handleSubmit(e, { options: { body: { useRag, llm, similarityMetric}}});
+    handleSubmit(e, { options: { body: { llm }}});
   }
 
   const handlePrompt = (promptText) => {
     const msg: Message = { id: crypto.randomUUID(),  content: promptText, role: 'user' };
-    append(msg, { options: { body: { collection, llm, similarityMetric}}});
+    append(msg, { options: { body: { llm }}});
   };
 
   const handleReset = () => {

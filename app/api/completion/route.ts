@@ -7,7 +7,6 @@ import { CATEGORIES } from "../../../utils/consts";
 const {
   ASTRA_DB_APPLICATION_TOKEN,
   ASTRA_DB_ENDPOINT,
-  ASTRA_DB_SUGGESTIONS_COLLECTION,
   BUGSNAG_API_KEY,
   OPENAI_API_KEY,
 } = process.env;
@@ -23,7 +22,7 @@ export async function POST(req: Request) {
     let docContext = "";
 
     try {
-      const suggestionsCollection = await astraDb.collection(ASTRA_DB_SUGGESTIONS_COLLECTION);
+      const suggestionsCollection = await astraDb.collection("article_suggestions");
 
       const suggestionsDoc = await suggestionsCollection.findOne(
         {
