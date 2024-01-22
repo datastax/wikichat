@@ -25,7 +25,7 @@ export async function POST(req: Request) {
     try {
       const suggestionsCollection = await astraDb.collection(ASTRA_DB_SUGGESTIONS_COLLECTION);
 
-      const suggestionsCursor = suggestionsCollection.find(
+      const suggestionsDoc = await suggestionsCollection.findOne(
         {
           _id: "recent_articles"
         },
@@ -36,18 +36,14 @@ export async function POST(req: Request) {
           },
         });
 
-      const suggestionsDocuments = await suggestionsCursor.toArray();
-
-      const docsMap = suggestionsDocuments?.map((doc, index) => {
-        return doc.recent_articles.map((article, index) => {
-          return {
-            pageTitle: article.metadata.title,
-            content: article.suggested_chunks.map(chunk => chunk.content)
-          }
-        })
+      const docMap = suggestionsDoc.recent_articles.map(article => {
+        return {
+          pageTitle: article.metadata.title,
+          content: article.suggested_chunks.map(chunk => chunk.content)
+        }
       });
 
-      docContext = JSON.stringify(docsMap);
+      docContext = JSON.stringify(docMap);
     } catch (e) {
       console.log("Error querying db...");
     }
