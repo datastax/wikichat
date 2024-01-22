@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from 'react';
-import getCollection from '../getCollection';
 
 export type SimilarityMetric = "cosine" | "euclidean" | "dot_product";
 
@@ -38,21 +37,11 @@ const useConfiguration = () => {
     }
   }, [useRag, llm, similarityMetric]);
 
-  const [collection, setCollection] = useState(process.env.ASTRA_DB_COLLECTION)
-
-  useEffect(() => {
-    const fetchCollection = async () => {
-      const collectionName = await getCollection();
-      setCollection(collectionName);
-    }
-  },[]);
-
   return {
     useRag,
     llm,
     similarityMetric,
     setConfiguration,
-    collection,
   };
 }
 
