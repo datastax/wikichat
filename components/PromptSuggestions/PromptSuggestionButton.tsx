@@ -26,19 +26,19 @@ const categoryIcon = (category: CategoryType) => {
       return <Search />;
     case 'technology':
       return <Cpu />;
-    case 'arts and culture':
+    case 'arts_and_culture':
       return <Palette />;
-    case 'sports and games':
+    case 'sports_and_games':
       return <Joystick />;
     case 'geography':
       return <GlobeAmericas />
-    case 'health and medicine':
+    case 'health_and_medicine':
       return <CapsulePill />;
-    case 'society and politics':
+    case 'society_and_politics':
       return <Bank />;
-    case 'business and economics':
+    case 'business_and_economics':
       return <Briefcase />;
-    case 'philosophy and religion':
+    case 'philosophy_and_religion':
       return <YinYang />;
   }
 }
@@ -47,7 +47,7 @@ const PromptSuggestionButton = ({ category, question, onClick }: Props) => {
   return (
     <button
       onClick={onClick}
-      className="prompt-button flex flex-col justify-center gap-2 text-sm rounded-lg w-64 h-44 px-8 focus:outline-none focus:shadow-outline"
+      className={`${category} flex flex-col justify-center gap-2 text-sm rounded-lg w-64 h-44 px-8 focus:outline-none focus:shadow-outline`}
     >
       <span>{categoryIcon(category)}</span>
       {question}

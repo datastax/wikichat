@@ -8,9 +8,10 @@ export interface PromptSuggestion {
 interface Props {
   prompts: PromptSuggestion[];
   onPromptClick: (prompt: string) => void;
+  setCategory: (category: CategoryType | 'custom') => void;
 }
 
-const PromptSuggestionRow = ({ prompts, onPromptClick }: Props) => {
+const PromptSuggestionRow = ({ prompts, onPromptClick, setCategory }: Props) => {
   return (
     <div className="flex flex-row justify-center items-center py-4 gap-2">
       {prompts && prompts?.map((prompt, index) => (
@@ -18,7 +19,10 @@ const PromptSuggestionRow = ({ prompts, onPromptClick }: Props) => {
           key={`suggestion-${index}`}
           category={prompt.category}
           question={prompt.question}
-          onClick={() => onPromptClick(prompt.question)}
+          onClick={() => {
+            setCategory(prompt.category)
+            onPromptClick(prompt.question)
+          }}
         />
       ))}
     </div>

@@ -1,14 +1,14 @@
 export const CATEGORIES = [
   'history',
   'science',
-  'sports and games',
+  'sports_and_games',
   'technology',
-  'arts and culture',
-  'philosophy and religion',
+  'arts_and_culture',
+  'philosophy_and_religion',
   'geography',
-  'society and politics',
-  'business and economics',
-  'health and medicine',
+  'society_and_politics',
+  'business_and_economics',
+  'health_and_medicine',
 ] as const;
 
 export type CategoryType = typeof CATEGORIES[number];

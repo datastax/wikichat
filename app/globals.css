@@ -17,6 +17,18 @@
   --text-tertiary: #6B6F73;
   --shadow-primary: 0px 6px 16px 0px #0A0A0A1F, 0px 4px 14px 0px #0A0A0A14, 0px 8px 10px 0px #0A0A0A14;
   --processing-dot-size: 4px;
+
+  --category-history: #57F5FF;
+  --category-science: #FFF282;
+  --category-technology: #B388FF;
+  --category-arts: #F6A773;
+  --category-geography: #76FFBC;
+  --category-philosophy: #FDB5CD;
+  --category-politics: #57F5FF;
+  --category-business: #FFF282;
+  --category-health: #B388FF;
+  --category-sports: #F6A773;
+  --category-custom: #E3E4E5;
 }
 
 
@@ -32,8 +44,19 @@
   --border-primary: #262626;
   --background-start-rgb: 23, 23, 23;
   --background-end-rgb: 28, 28, 28;
-}
 
+  --category-history: #1A237E;
+  --category-science: #605603;
+  --category-technology: #4A148C;
+  --category-arts: #3E2723;
+  --category-geography: #004D40;
+  --category-philosophy: #760843;
+  --category-politics: #1A237E;
+  --category-business: #605603;
+  --category-health: #4A148C;
+  --category-sports: #3E2723;
+  --category-custom: #171818;
+}
 
 body {
   background: linear-gradient(to bottom,
@@ -247,4 +270,39 @@ body {
 
 .link {
   color: var(--text-primary-main);
+}
+
+/* category backgrounds */
+.history {
+  background-color: var(--category-history);
+}
+.science {
+  background-color: var(--category-science);
+}
+.technology {
+  background-color: var(--category-technology);
+}
+.arts_and_culture {
+  background-color: var(--category-arts);
+}
+.geography {
+  background-color: var(--category-geography);
+}
+.philosophy_and_religion {
+  background-color: var(--category-philosophy);
+}
+.society_and_politics {
+  background-color: var(--category-politics);
+}
+.health_and_medicine {
+  background-color: var(--category-health);
+}
+.business_and_economics {
+  background-color: var(--category-business);
+}
+.sports_and_games {
+  background-color: var(--category-sports);
+}
+.custom {
+  background-color: var(--category-custom);
 }
