@@ -5,7 +5,7 @@ import { CategoryType } from '../../utils/consts';
 
 const useTheme = () => {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
-  const [category, setCategory] = useState<CategoryType | 'custom'>('custom');
+  const [category, setCategory] = useState<CategoryType | 'custom'>();
 
   useEffect(() => {
     const getLocalValue = (): 'light' | 'dark' => {
