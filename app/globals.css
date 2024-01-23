@@ -107,14 +107,6 @@
     color: var(--text-primary-inverse);
   }
 
-  .chatbot-input-icon {
-    color: var(--text-primary-inverse);
-  }
-
-  .chatbot-input::placeholder {
-    color: var(--text-secondary);
-  }
-
   .chatbot-text-secondary-inverse {
     color: var(--text-secondary-inverse);
   }
@@ -125,10 +117,15 @@
 
   .chatbot-input {
     color: var(--text-primary-inverse);
+    background-color: var(--background-body);
   }
 
   .chatbot-input::placeholder {
-    color: var(--text-secondary);
+    color: var(--text-primary-inverse);
+  }
+
+  .chatbot-input-icon {
+    color: var(--text-primary-inverse);
   }
 
   .chatbot-send-button {
