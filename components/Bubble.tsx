@@ -11,39 +11,36 @@ const Bubble:JSXElementConstructor<any> = forwardRef(function Bubble({ content, 
   const [hasSource, setHasSource] = useState(false);
 
   return (
-    <div ref={ref  as RefObject<HTMLDivElement>} className={`block mt-4 md:mt-6 pb-[7px] clear-both ${isUser ? 'float-right' : 'float-left'}`}>
-      <div className={`flex justify-end ${hasSource ? 'mb-4' : ''}`}>
-        <div className={`talk-bubble${isUser ? ' user' : ''} border p-2 md:p-4`}>
-          <Markdown
-            remarkPlugins={[remarkGfm]}
-            components={{
-              a({ href, children }) {
-                setHasSource(true);
-                return (
-                  <Link
-                    className={`source-link ${category} border no-wrap`}
-                    href={href}
-                    rel="noreferrer noopener"
-                    target="_blank"
-                  >
-                    <LinkIcon />
-                    {children}
-                  </Link>
-                )
-              }, 
-              code({ node, children, ...props }) {
-                return (
-                  <code {...props}>
-                      {children}
-                  </code>
-                  )
-              }
-            }}
-          >
-            {content?.content}
-          </Markdown>
-        </div>
-      </div>
+    <div ref={ref  as RefObject<HTMLDivElement>} className={`relative ${isUser ? 'ml-24 md:ml-52' : 'mr-24 md:mr-52'}`}>
+      <Markdown
+        className={`outline p-3 max-w-fit rounded-t-xl ${isUser ? 'ml-auto bg-bg-2 rounded-bl-xl' : 'mr-auto rounded-br-xl'}${hasSource ? ' mb-8' : ''}`}
+        remarkPlugins={[remarkGfm]}
+        components={{
+          a({ href, children }) {
+            setHasSource(true);
+            return (
+              <Link
+                className={`${category} absolute flex px-2 gap-1 items-center mt-5 rounded-b-lg rounded-tr-lg border no-wrap`}
+                href={href}
+                rel="noreferrer noopener"
+                target="_blank"
+              >
+                <LinkIcon />
+                {children}
+              </Link>
+            )
+          }, 
+          code({ node, children, ...props }) {
+            return (
+              <code {...props}>
+                {children}
+              </code>
+              )
+          }
+        }}
+      >
+        {content?.content}
+      </Markdown>
     </div>
   )
 })

@@ -13,7 +13,7 @@ interface Props {
 
 const PromptSuggestionRow = ({ prompts, onPromptClick, setCategory }: Props) => {
   return (
-    <div className="flex flex-col md:flex-row justify-center items-center py-4 gap-2">
+    <div className="grid grid-flow-row md:grid-flow-col gap-2">
       {prompts && prompts?.map((prompt, index) => (
         <PromptSuggestionButton 
           key={`suggestion-${index}`}

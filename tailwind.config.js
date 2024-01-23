@@ -11,6 +11,7 @@ module.exports = {
     colors: {
       primary: "var(--primary)",
       "primary-hover": "var(--primary-hover)",
+      tertiary: "var(--tertiary)",
       inverse: "var(--inverse)",
       body: "var(--background-body)",
       "bg-1": "var(--background-level1)",
@@ -34,5 +35,5 @@ module.exports = {
       },
     },
   },
-  plugins: [],
+  plugins: [require('tailwind-scrollbar'),],
 };
