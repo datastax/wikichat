@@ -1,4 +1,3 @@
-import Bugsnag from "@bugsnag/js";
 import { AstraDB } from "@datastax/astra-db-ts";
 import OpenAI from "openai";
 import type { ChatCompletionCreateParams } from 'openai/resources/chat';
@@ -7,7 +6,6 @@ import { CATEGORIES } from "../../../utils/consts";
 const {
   ASTRA_DB_APPLICATION_TOKEN,
   ASTRA_DB_ENDPOINT,
-  BUGSNAG_API_KEY,
   OPENAI_API_KEY,
 } = process.env;
 
@@ -103,9 +101,6 @@ export async function POST(req: Request) {
 
     return new Response(response.choices[0].message.function_call.arguments);
   } catch (e) {
-    if (BUGSNAG_API_KEY) {
-      Bugsnag.notify(e);
-    }
     throw e;
   }
 }

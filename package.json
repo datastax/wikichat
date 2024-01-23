@@ -10,7 +10,6 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@bugsnag/js": "^7.22.2",
     "@datastax/astra-db-ts": "0.1.2",
     "@fontsource/space-grotesk": "^5.0.16",
     "@headlessui/react": "^1.7.18",

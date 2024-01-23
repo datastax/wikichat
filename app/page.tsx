@@ -84,7 +84,7 @@ export default function Home() {
             <input
               className='chatbot-input bg-transparent hover:border-primary focus:border-primary block border w-full text-sm md:text-base outline-none bg-transparent rounded-full py-2 px-4'
               onChange={handleInputChange}
-              placeholder='Ask me anything...'
+              placeholder='Enter your question...'
               value={input}
             />
             <button type="submit" className='chatbot-input-icon absolute end-3 bottom-2.5'>
