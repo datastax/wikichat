@@ -82,7 +82,7 @@ export async function POST(req: Request) {
     const response = await openai.chat.completions.create(
       {
         model: "gpt-3.5-turbo-16k",
-        temperature: 1.5,
+        temperature: 1,
         messages: [{
           role: "user",
           content: `You are an assistant who creates sample questions to ask a chatbot.

@@ -309,4 +309,22 @@
     background-color: var(--gray);
   }
 
+  @keyframes fallIn {
+    from { transform: translateY(-100px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  #W, #I1, #K, #I2, #C, #H, #A, #T {
+      opacity: 0;
+      animation: fallIn 0.25s forwards;
+      animation-delay: 1s;
+  }
+
+  #I1 { animation-delay: 1.4s; }
+  #K { animation-delay: 1.5s; }
+  #I2 { animation-delay: 1.3s; }
+  #C { animation-delay: 1.1s; }
+  #H { animation-delay: 1.2s; }
+  #A { animation-delay: 1.1s; }
+  #T { animation-delay: 1.5s; }
 }
