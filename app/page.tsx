@@ -59,7 +59,7 @@ export default function Home() {
 
   return (
     <main className={`${category} flex h-screen flex-col items-center justify-center p-4`}>
-      <section className='flex flex-col bg-body origin:w-[1200px] w-full origin:h-[800px] h-full rounded-3xl border p-16'>
+      <section className='flex flex-col bg-body origin:w-[1200px] w-full origin:h-[800px] h-full rounded-3xl border p-6 md:p-16'>
         <Navbar 
           llm={llm}
           setConfiguration={setConfiguration}
