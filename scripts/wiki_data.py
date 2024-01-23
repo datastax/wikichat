@@ -10,10 +10,14 @@ from wikichat.utils.pipeline import WorkerNameLoggingFilter
 def _config_logging():
     log_format = '%(asctime)s.%(msecs)03d - %(levelname)-7s - %(name)s - %(worker_name)s - %(message)s'
     log_dt_format = '%Y-%m-%d %H:%M:%S'
+    log_dir = os.path.join(os.path.dirname(__file__), "logs")
+    os.makedirs(log_dir, exist_ok=True)
+
+
     formatter = logging.Formatter(log_format, datefmt=log_dt_format)
 
     # Create a file handler to log messages to a file
-    file_handler = RotatingFileHandler('debug.log', maxBytes=1024 * 1024 * 10, backupCount=5)
+    file_handler = RotatingFileHandler(os.path.join(log_dir, 'debug.log'), maxBytes=1024 * 1024 * 10, backupCount=5)
     file_handler.setLevel(logging.DEBUG)
     file_handler.setFormatter(formatter)
     file_handler.addFilter(WorkerNameLoggingFilter())
@@ -33,7 +37,7 @@ def _config_logging():
     root_logger.addFilter(WorkerNameLoggingFilter())
 
     # Special file for chunks we have already seen
-    existing_chunk_file_handler = RotatingFileHandler('existing_chunks.log', maxBytes=1024 * 1024 * 5, backupCount=5)
+    existing_chunk_file_handler = RotatingFileHandler(os.path.join(log_dir, 'existing_chunks.log'), maxBytes=1024 * 1024 * 5, backupCount=5)
     existing_chunk_file_handler.setLevel(logging.DEBUG)
     existing_chunk_file_handler.setFormatter(formatter)
     existing_chunk_file_handler.addFilter(WorkerNameLoggingFilter())

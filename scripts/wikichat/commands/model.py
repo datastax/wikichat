@@ -10,7 +10,7 @@ from dataclasses_json import dataclass_json
 @dataclass_json
 @dataclass
 class CommonPipelineArgs():
-    max_articles: int = field(default=25,
+    max_articles: int = field(default=2000,
                               metadata={
                                   "help": 'Maximum number of articles to process, from both bulk loading and listening.'})
 
@@ -26,9 +26,9 @@ class CommonPipelineArgs():
 @dataclass_json
 @dataclass
 class LoadPipelineArgs(CommonPipelineArgs):
-    max_file_lines: int = field(default=15,
+    max_file_lines: int = field(default=0,
                                 metadata={
-                                    "help": 'Maximum number of lines to read from the file to start processing.'
+                                    "help": 'Maximum number of lines to read from the file to start processing, 0 to disable.'
                                 })
     file: str = field(default="scripts/data/wiki_links.txt",
                       metadata={
