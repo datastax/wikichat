@@ -1,36 +1,28 @@
-import { Tooltip } from 'react-tooltip'
-import { Listbox } from '@headlessui/react'
-import { SimilarityMetric } from '../app/hooks/useConfiguration';
+import { Tooltip } from 'react-tooltip';
+import { Listbox } from '@headlessui/react';
 import { useState } from 'react';
 import { ChevronDown } from 'react-bootstrap-icons';
 
 interface Props {
-  useRag: boolean;
   llm: string;
-  similarityMetric: SimilarityMetric;
-  setConfiguration: (useRag: boolean, llm: string, similarityMetric: SimilarityMetric) => void;
+  setConfiguration: (llm: string) => void;
   theme: 'light' | 'dark';
   setTheme: (theme: 'light' | 'dark') => void;
 }
 
-const Navbar = ({ useRag, llm, similarityMetric, setConfiguration, theme, setTheme }: Props): JSX.Element => {
+const Navbar = ({ llm, setConfiguration, theme, setTheme }: Props): JSX.Element => {
     const llmOptions = [
       { label: 'GPT 3.5 Turbo', value: 'gpt-3.5-turbo' },
       { label: 'GPT 4', value: 'gpt-4' },
       { label: 'GPT 4 Turbo', value: 'gpt-4-1106-preview' },
     ];
 
-    const [rag, setRag] = useState(useRag);
     const [selectedLlm, setSelectedLlm] = useState(llmOptions.find(opt => opt.value === llm));
-    const [selectedSimilarityMetric, setSelectedSimilarityMetric] = useState<SimilarityMetric>(similarityMetric);
-
   
     const handleChange = (llm) => {
       setSelectedLlm(llm)
       setConfiguration(
-          rag,
           llm.value,
-          selectedSimilarityMetric
       );
     };
 
