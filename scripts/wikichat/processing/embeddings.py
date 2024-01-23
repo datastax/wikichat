@@ -10,7 +10,7 @@ from cohere.responses import Embeddings
 
 load_dotenv()
 
-COHERE_CLIENT = cohere.AsyncClient(os.getenv("COHERE_API"))
+COHERE_CLIENT = cohere.AsyncClient(os.getenv("COHERE_API_KEY"))
 EMBEDDING_MODEL = 'embed-english-v3.0'
 
 

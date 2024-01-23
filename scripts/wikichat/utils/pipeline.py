@@ -63,7 +63,7 @@ class AsyncStep:
                     # there is no dest when this is the last step
                     await self._next_step.add_item(result)
             except Exception as e:
-                logging.exception(f"Error in worker, item will be dropped - {e}", exc_info=False)
+                logging.exception(f"Error in worker, item will be dropped - {e}", exc_info=True)
                  # Second log is to get the details into the debug so we can fix, first is to get it into
                 # heroku or other log aggregators
                 logging.debug(f"Error in worker {worker_name}", exc_info=True)
