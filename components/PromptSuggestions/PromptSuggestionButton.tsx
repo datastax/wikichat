@@ -21,25 +21,25 @@ interface Props {
 const categoryIcon = (category: CategoryType) => {
   switch (category) {
     case 'history':
-      return <HourglassSplit />;
+      return <HourglassSplit size={20} />;
     case 'science':
-      return <Search />;
+      return <Search size={20} />;
     case 'technology':
-      return <Cpu />;
+      return <Cpu size={20} />;
     case 'arts_and_entertainment':
-      return <Palette />;
+      return <Palette size={20} />;
     case 'sports_and_games':
-      return <Joystick />;
+      return <Joystick size={20} />;
     case 'geography':
-      return <GlobeAmericas />
+      return <GlobeAmericas size={20} />
     case 'health_and_medicine':
-      return <CapsulePill />;
+      return <CapsulePill size={20} />;
     case 'society_and_politics':
-      return <Bank />;
+      return <Bank size={20} />;
     case 'business_and_economics':
-      return <Briefcase />;
+      return <Briefcase size={20} />;
     case 'philosophy_and_religion':
-      return <YinYang />;
+      return <YinYang size={20} />;
   }
 }
 
@@ -51,7 +51,7 @@ const PromptSuggestionButton = ({ category, question, onClick }: Props) => {
     >
       <span className='hidden md:block'>{categoryIcon(category)}</span>
       {question}
-      <span className='self-end'><ArrowRight /></span>
+      <span className='self-end'><ArrowRight size={20} /></span>
     </button>
   );
 };

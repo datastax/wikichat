@@ -125,7 +125,6 @@
 
   .chatbot-input {
     color: var(--text-primary-inverse);
-    border: 1px solid var(--border-primary);
   }
 
   .chatbot-input::placeholder {
@@ -166,39 +165,21 @@
     display: inline-block;
     position: relative;
     color: var(--text-secondary-inverse);
-    background-color: var(--background-bubble-secondary);
+    background-color: var(--background-level1);
     border-radius: 10px;
     border-bottom-left-radius: 0px;
   }
 
   .talk-bubble.user {
     text-align: right;
-    color: var(--text-primary);
-    background-color: var(--background-bubble-primary);
+    color: var(--text-primary-inverse);
+    background-color: var(--background-level2);
     border-radius: 10px;
     border-bottom-right-radius: 0px;
   }
 
-  .talk-bubble svg {
-    position: absolute;
-    left: -1px;
-    bottom: 2px;
-    transform: translateY(100%) rotateY(180deg);
-    fill: var(--background-bubble-secondary);
-  }
-
-  .talk-bubble.user svg {
-    right: -1px;
-    left: auto;
-    bottom: 2px;
-    transform: translateY(100%);
-    fill: var(--background-bubble-primary);
-  }
-
   .dot-flashing {
     position: relative;
-    /* padding-left: 8px; */
-    /* padding-right: 8px; */
     width: var(--processing-dot-size);
     height: var(--processing-dot-size);
     border-radius: 100%;
@@ -279,22 +260,16 @@
     right: 0;
     display: flex;
     align-items: center;
+    color: var(--text-primary-inverse);
+    border-radius: 10px;
+    border-top-left-radius: 0px;
+    padding: 0 8px;
   }
 
   .source-link svg {
     position: static;
     transform: none;
     margin-right: 8px;
-  }
-
-  .source-link a {
-    display: flex;
-    align-items: center;
-    color: var(--text-primary-main);
-    border: 1px solid var(--border-primary);
-    border-radius: 24px;
-    padding: 0 8px;
-    margin-left: 8px;
   }
 
   .link {
@@ -311,7 +286,7 @@
   .technology {
     background-color: var(--turf);
   }
-  .arts_and_culture {
+  .arts_and_entertainment {
     background-color: var(--lemon);
   }
   .geography {

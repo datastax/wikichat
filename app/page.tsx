@@ -26,7 +26,7 @@ export default function Home() {
     }
   });
   const { category, setCategory, theme, setTheme } = useTheme();
-  const { useRag, llm, similarityMetric, setConfiguration } = useConfiguration();
+  const { llm, setConfiguration } = useConfiguration();
 
   const messagesEndRef = useRef(null);
 
@@ -61,15 +61,15 @@ export default function Home() {
     <main className={`${category} flex h-screen flex-col items-center justify-center`}>
       <section className='flex flex-col bg-body origin:w-[1200px] w-full origin:h-[800px] h-full rounded-3xl border p-16'>
         <Navbar 
-          useRag={useRag}
           llm={llm}
-          similarityMetric={similarityMetric}
           setConfiguration={setConfiguration}
           theme={theme} 
           setTheme={setTheme} />
         <div className='flex-1 relative overflow-y-auto my-4 md:my-6'>
           <div className='absolute w-full h-full overflow-x-hidden'>
-            {messages.map((message, index) => <Bubble ref={messagesEndRef} key={`message-${index}`} content={message} />)}
+            {messages.map((message, index) => (
+              <Bubble ref={messagesEndRef} key={`message-${index}`} content={message} category={category} />
+            ))}
             {isLoading && messages?.length % 2 !== 0 && <LoadingBubble ref={messagesEndRef} />}
           </div>
         </div>
@@ -79,7 +79,7 @@ export default function Home() {
         <form className='flex h-[40px] gap-2' onSubmit={handleSend}>
           <div className='relative flex-1'>
             <input
-              className='chatbot-input block w-full text-sm md:text-base outline-none bg-transparent rounded-full p-2'
+              className='chatbot-input block border w-full text-sm md:text-base outline-none bg-transparent rounded-full p-2'
               onChange={handleInputChange}
               placeholder='Send a message...'
               value={input}
