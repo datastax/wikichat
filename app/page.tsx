@@ -58,7 +58,7 @@ export default function Home() {
   };
 
   return (
-    <main className={`${category} flex h-screen flex-col items-center justify-center`}>
+    <main className={`${category} flex h-screen flex-col items-center justify-center p-4`}>
       <section className='flex flex-col bg-body origin:w-[1200px] w-full origin:h-[800px] h-full rounded-3xl border p-16'>
         <Navbar 
           llm={llm}
@@ -74,12 +74,15 @@ export default function Home() {
           </div>
         </div>
         {!messages || messages.length === 0 && (
-          <PromptSuggestionRow prompts={suggestions} onPromptClick={handlePrompt} setCategory={setCategory} />
+          <>
+            <div className="mb-40 text-3xl text-center hidden md:block">What would you like to learn about today?</div>
+            <PromptSuggestionRow prompts={suggestions} onPromptClick={handlePrompt} setCategory={setCategory} />
+          </>
         )}
         <form className='flex h-[40px] gap-2' onSubmit={handleSend}>
           <div className='relative flex-1'>
             <input
-              className='chatbot-input block border w-full text-sm md:text-base outline-none bg-transparent rounded-full p-2'
+              className='chatbot-input bg-transparent hover:border-primary focus:border-primary block border w-full text-sm md:text-base outline-none bg-transparent rounded-full py-2 px-4'
               onChange={handleInputChange}
               placeholder='Enter your question...'
               value={input}
@@ -88,7 +91,7 @@ export default function Home() {
               <Send size={20} />
             </button>
           </div>
-          <button onClick={handleReset}  className='chatbot-send-button flex rounded-full items-center justify-center px-2.5 origin:px-3'>
+          <button onClick={handleReset}  className='chatbot-send-button hover:bg-primary-hover flex rounded-full items-center justify-center px-2.5 origin:px-3'>
             <ArrowCounterclockwise size={20} />
             <span className='hidden origin:block text-sm ml-2'>New chat</span>
           </button>
