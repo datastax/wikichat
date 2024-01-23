@@ -1,8 +1,9 @@
-"""This module contains functions to read wikipedia articles
 """
-from dataclasses import replace
+This module contains functions to read wikipedia articles
+"""
 import logging
 import re
+from dataclasses import replace
 
 import aiohttp
 from bs4 import BeautifulSoup, ResultSet as bs4ResultSet
@@ -73,6 +74,7 @@ async def scrape_article(meta: ArticleMetadata) -> Article | None:
         content=cleaned_content
     )
 
+
 def _redirects_to(meta: ArticleMetadata, soup: BeautifulSoup) -> str | None:
     # Next is handling wiki redirects, these are not normal HTTP 302 redirects
     # see https://en.wikipedia.org/wiki/Wikipedia:Redirect
@@ -84,7 +86,6 @@ def _redirects_to(meta: ArticleMetadata, soup: BeautifulSoup) -> str | None:
     new_url = canonical_link.get('href') if canonical_link else None
 
     return new_url if new_url and new_url != meta.url else None
-
 
 
 def _maybe_update_metadata(meta: ArticleMetadata, soup: BeautifulSoup) -> ArticleMetadata:

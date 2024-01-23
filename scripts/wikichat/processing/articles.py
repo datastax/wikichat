@@ -1,24 +1,23 @@
-"""Logic for processing articles into the DB
+"""
+The processing steps for ingesting wikipedia articles are in this module.
 
-This is the main processing pipeline, it takes an article and processes it into the DB
-
-See create_pipeline() at the bottom of the file for the pipeline steps
+The processing/__init__.py file joins these functions together into a pipeline.
 """
 import hashlib
 import json
 import logging
-import sys
 from datetime import datetime
 
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 import wikichat.utils
-from wikichat.processing import embeddings, wikipedia
 from wikichat.database import EMBEDDINGS_COLLECTION, METADATA_COLLECTION, SUGGESTIONS_COLLECTION
-from wikichat.utils.metrics import METRICS
-from wikichat.processing.model import ArticleMetadata, Article, ChunkedArticle, Chunk, ChunkMetadata, ChunkedArticleDiff, \
+from wikichat.processing import embeddings, wikipedia
+from wikichat.processing.model import ArticleMetadata, Article, ChunkedArticle, Chunk, ChunkMetadata, \
+    ChunkedArticleDiff, \
     ChunkedArticleMetadataOnly, VectoredChunkedArticleDiff, VectoredChunk, EmbeddingDocument, RECENT_ARTICLES, \
     RecentArticles
+from wikichat.utils.metrics import METRICS
 from wikichat.utils.pipeline import AsyncPipeline
 
 TEXT_SPLITTER = RecursiveCharacterTextSplitter(chunk_size=1024, chunk_overlap=200, length_function=len)
@@ -125,10 +124,12 @@ async def vectorize_diff(article_diff: ChunkedArticleDiff) -> VectoredChunkedArt
     non_zero_vectors = list(vector for vector in vectors if any(x != 0 for x in vector))
     zero_vector_count = len(vectors) > len(non_zero_vectors)
     if zero_vector_count:
-        logging.debug(f"Skipping article {article_diff.chunked_article.article.metadata.url} cohere returned {zero_vector_count} zero vectors")
+        logging.debug(
+            f"Skipping article {article_diff.chunked_article.article.metadata.url} cohere returned {zero_vector_count} zero vectors")
         for i in range(len(vectors)):
             if all([x == 0 for x in vectors[i]]):
-                logging.debug(f"Zero vector for chunk in {article_diff.chunked_article.article.metadata.url} content= {article_diff.new_chunks[i].content}")
+                logging.debug(
+                    f"Zero vector for chunk in {article_diff.chunked_article.article.metadata.url} content= {article_diff.new_chunks[i].content}")
         await METRICS.update_article(zero_vectors=1)
         return None
 
@@ -145,7 +146,6 @@ async def vectorize_diff(article_diff: ChunkedArticleDiff) -> VectoredChunkedArt
 async def store_article_diff(article_diff: VectoredChunkedArticleDiff) -> VectoredChunkedArticleDiff:
     # HACK - update the meta data first, if there is an error we will fail before we insert the chunks
     # this is not ideal, but I think it will reduce the amount of chunk collisions under load
-    # of course, no errors would be better but baby steps
     await update_article_metadata(article_diff)
     await insert_vectored_chunks(article_diff.new_chunks)
     await delete_vectored_chunks(article_diff.deleted_chunks)
@@ -266,4 +266,3 @@ async def process_article_metadata(pipeline: AsyncPipeline, article_metadata: li
             logging.info(f"Reached max number of items to process ({pipeline.max_items}), stopping.")
             return False
     return True
-
