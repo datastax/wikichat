@@ -31,8 +31,8 @@ const Navbar = ({ llm, setConfiguration, theme, setTheme }: Props): JSX.Element 
     };
 
   
-    return <nav className="flex flex-col md:flex-row gap-6 items-center md:items-start">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" width="225" height="33" viewBox="0 0 225 33">
+    return <nav className="flex flex-col md:flex-row gap-3 md:gap-6 rounded-t-3xl bg-body items-center md:items-start sticky top-0 z-10 p-6 md:px-16 md:pt-16">
+      <svg className="w-[180px] md:w-[225px]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 225 33">
         <path
           fill="currentColor"
           fillRule="evenodd"
@@ -52,11 +52,11 @@ const Navbar = ({ llm, setConfiguration, theme, setTheme }: Props): JSX.Element 
               {selectedLlm.label}
               <ChevronDown />
             </Listbox.Button>
-            <Listbox.Options className="absolute mt-1 z-10 w-40 rounded-xl bg-body border p-2">
+            <Listbox.Options className="absolute mt-1 z-20 w-40 rounded-xl bg-body border p-2">
                 {llmOptions.map((llm) => (
                 <Listbox.Option
                   className={({ active, selected }) =>
-                    `relative cursor-default select-none px-2 py-1 rounded-xl${active ? ' bg-bg-1' : ' bg-none'}${selected ? ' font-bold' : ' font-normal'}`
+                    `relative cursor-default select-none px-2 py-1 rounded-xl${active ? ' bg-bg-1' : ' bg-none'}${selected ? ' font-bold bg-bg-2' : ' font-normal'}`
                   }
                   key={llm.value}
                   value={llm}
@@ -82,7 +82,7 @@ const Navbar = ({ llm, setConfiguration, theme, setTheme }: Props): JSX.Element 
           </button>
 
         <button id="app-tooltip" className="peer border rounded-full bg-body hover:bg-bg-1 w-10 h-10">?</button>
-        <Tooltip anchorSelect="#app-tooltip" place="bottom-end" clickable className="max-w-sm md:max-w-2xl rounded-2xl z-10">
+        <Tooltip anchorSelect="#app-tooltip" place="bottom-end" clickable className="max-w-sm md:max-w-2xl rounded-2xl z-30">
           Chatting with WikiChat is a breeze!
           Simply type your questions or requests in a clear and concise manner.
           Responses are sourced from{' '}

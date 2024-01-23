@@ -4,19 +4,6 @@
 
 @layer base {
   :root {
-    --text-primary: #FFFFFF;
-    --text-primary-inverse: #090909;
-    --text-primary-main: #7724AA;
-    --text-secondary: #A6AAAE;
-    --text-secondary-inverse: #494A4D;
-    --background-bubble-primary: #611C9B;
-    --background-bubble-secondary: #F7F7F7;
-    --border-primary: #CED0D2;
-    --background-soft: #F3E5F5;
-    --background-start-rgb: 214, 219, 220;
-    --background-end-rgb: 255, 255, 255;
-    --text-tertiary: #6B6F73;
-    --shadow-primary: 0px 6px 16px 0px #0A0A0A1F, 0px 4px 14px 0px #0A0A0A14, 0px 8px 10px 0px #0A0A0A14;
     --processing-dot-size: 4px;
 
     --white: #FFFFFF;
@@ -37,6 +24,7 @@
     --background-level2: var(--neutral-50);
     --primary: var(--neutral-900);
     --primary-hover: var(--neutral-800);
+    --tertiary: var(--neutral-400);
     --inverse: var(--white);
 
     --sky: #C2D7FE;
@@ -48,28 +36,16 @@
     --mushroom: #B388FF;
     --gray: #E3E4E5;
 
-    --link: var(--mushroom);
+    --link: #B388FF;
   }
 
   :root.dark {
-    --text-primary: #090909;
-    --text-primary-inverse: #FFFFFF;
-    --text-primary-main: #9946B9;
-    --text-secondary: #494A4D;
-    --text-secondary-inverse: #A6AAAE;
-    --neutral-main: #FFFFFF;
-    --background-bubble-primary: #BA68C8;
-    --background-bubble-secondary: #232324;
-    --background-soft: #200033;
-    --border-primary: #262626;
-    --background-start-rgb: 23, 23, 23;
-    --background-end-rgb: 28, 28, 28;
-
     --background-body: var(--neutral-900);
     --background-level1: var(--neutral-800);
     --background-level2: var(--neutral-700);
     --primary: var(--white);
     --primary-hover: var(--neutral-50);
+    --tertiary: var(--neutral-600);
     --inverse: var(--neutral-900);
 
     --sky: #384BCA;
@@ -80,8 +56,6 @@
     --surf: #006270;
     --mushroom: #58209B;
     --gray: #171818;
-
-    --link: var(--bubblegum);
   }
 
   *,
@@ -96,84 +70,8 @@
     color: var(--primary);
   }
 
-  .chatbot-header {
-    border-bottom: 1px solid var(--border-primary);
-  }
-
-  .chatbot-header svg {
-    fill: var(--text-primary-inverse);
-  }
-
-  .chatbot-text-primary {
-    color: var(--text-primary-inverse);
-  }
-
-  .chatbot-text-secondary-inverse {
-    color: var(--text-secondary-inverse);
-  }
-
-  .chatbot-text-tertiary {
-    color: var(--text-tertiary);
-  }
-
-  .chatbot-input {
-    color: var(--text-primary-inverse);
-    background-color: var(--background-body);
-  }
-
-  .chatbot-input::placeholder {
-    color: var(--text-primary-inverse);
-  }
-
-  .chatbot-input-icon {
-    color: var(--text-primary-inverse);
-  }
-
-  .chatbot-send-button {
-    background-color: var(--text-primary-inverse);
-    color: var(--text-primary);
-  }
-
-  .chatbot-send-button svg {
-    fill: var(--text-primary);
-  }
-
-  .chatbot-button-primary {
-    background-color: var(--text-primary-inverse);
-    color: var(--text-primary);
-  }
-
-  .chatbot-button-secondary {
-    border: 1px solid var(--border-primary);
-    color: var(--text-primary-inverse);
-  }
-
-  .chatbot-faq-link {
-    border: 1px solid var(--border-primary);
-    border-radius: 24px;
-    color: var(--background-bubble-primary);
-  }
-
-  .chatbot-faq-link svg {
-    fill: var(--text-tertiary);
-  }
-
-  .talk-bubble {
-    text-align: left;
-    display: inline-block;
-    position: relative;
-    color: var(--text-secondary-inverse);
-    background-color: var(--background-level1);
-    border-radius: 10px;
-    border-bottom-left-radius: 0px;
-  }
-
-  .talk-bubble.user {
-    text-align: right;
-    color: var(--text-primary-inverse);
-    background-color: var(--background-level2);
-    border-radius: 10px;
-    border-bottom-right-radius: 0px;
+  .input {
+    background-color: var(--background-body)
   }
 
   .dot-flashing {
@@ -181,8 +79,8 @@
     width: var(--processing-dot-size);
     height: var(--processing-dot-size);
     border-radius: 100%;
-    background-color: var(--text-tertiary);
-    color: var(--text-tertiary);
+    background-color: var(--tertiary);
+    color: var(--tertiary);
     animation: dot-flashing 1s infinite linear alternate;
     animation-delay: 0.5s;
   }
@@ -200,8 +98,8 @@
     width: var(--processing-dot-size);
     height: var(--processing-dot-size);
     border-radius: 100%;
-    background-color: var(--text-tertiary);
-    color: var(--text-tertiary);
+    background-color: var(--tertiary);
+    color: var(--tertiary);
     animation: dot-flashing 1s infinite alternate;
     animation-delay: 0s;
   }
@@ -211,67 +109,21 @@
     width: var(--processing-dot-size);
     height: var(--processing-dot-size);
     border-radius: 100%;
-    background-color: var(--text-tertiary);
-    color: var(--text-tertiary);
+    background-color: var(--tertiary);
+    color: var(--tertiary);
     animation: dot-flashing 1s infinite alternate;
     animation-delay: 1s;
   }
 
   @keyframes dot-flashing {
     0% {
-      background-color: var(--text-tertiary);
+      background-color: var(--tertiary);
     }
 
     50%,
     100% {
       background-color: rgba(152, 128, 255, 0.2);
     }
-  }
-
-  .prompt-button {
-    background-color: var(--background-soft);
-    color: var(--text-primary-main);
-  }
-
-  /* Toggle Styles */
-  .toggle-background {
-    background-color: var(--background-bubble-primary);
-  }
-
-  .toggle-boarder {
-    border: 1px solid var(--background-bubble-primary);
-  }
-
-  .vercel-link {
-    color: var(--text-primary-inverse);
-    background-color: var(--text-primary);
-    border-color: var(--border-primary);
-  }
-
-  .vercel-link hr {
-    border-color: var(--border-primary);
-  }
-
-  .source-link {
-    position: absolute;
-    bottom: -2rem;
-    right: 0;
-    display: flex;
-    align-items: center;
-    color: var(--text-primary-inverse);
-    border-radius: 10px;
-    border-top-left-radius: 0px;
-    padding: 0 8px;
-  }
-
-  .source-link svg {
-    position: static;
-    transform: none;
-    margin-right: 8px;
-  }
-
-  .link {
-    color: var(--text-primary-main);
   }
 
   /* category backgrounds */
@@ -308,5 +160,4 @@
   .custom {
     background-color: var(--gray);
   }
-
 }
