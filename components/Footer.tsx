@@ -2,7 +2,7 @@
 const Footer = () => {
   return (
     <footer className="chatbot-text-tertiary flex justify-between text-sm mt-6">
-      <div className="ml-auto flex flex-row items-center">
+      <div className="ml-auto flex flex-row flex-wrap items-center justify-end">
         <span className="mr-1">Powered by</span>
         <svg aria-label="DataStax logotype" width="87" height="9" viewBox="0 0 87 9" fill="none" xmlns="http://www.w3.org/2000/svg">
           <g clipPath="url(#clip0_209_2925)">
@@ -32,6 +32,9 @@ const Footer = () => {
           </clipPath>
           </defs>
         </svg>
+        <span className="ml-1">
+          and 🦜️🔗LangChain
+        </span>
       </div>
     </footer>
   );
