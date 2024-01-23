@@ -1,8 +1,12 @@
+"""
+Defines an async pipeline that can be used to process items through a series of steps.
+
+This is used by :mod:`wikichat.processing` to build a pipeline of commands defined in :mod:`wikichat.processing.articles`.
+
+"""
 import asyncio
 import contextvars
-import json
 import logging
-import sys
 from typing import Callable, Any, Union
 
 # used by the pipeline and the log filter to get the worker name
@@ -10,6 +14,7 @@ WORKER_NAME_CONTEXT_VAR = contextvars.ContextVar('worker_name', default="unknown
 
 
 class AsyncStep:
+    """A step in the pipeline that will call the func for each object added to it's source queue"""
 
     def __init__(self, func: Callable[[Any], Any], num_tasks: int,
                  listener: Callable[['AsyncStep', Any], bool] = None):
@@ -64,7 +69,7 @@ class AsyncStep:
                     await self._next_step.add_item(result)
             except Exception as e:
                 logging.exception(f"Error in worker, item will be dropped - {e}", exc_info=True)
-                 # Second log is to get the details into the debug so we can fix, first is to get it into
+                # Second log is to get the details into the debug so we can fix, first is to get it into
                 # heroku or other log aggregators
                 logging.debug(f"Error in worker {worker_name}", exc_info=True)
                 if self._error_listener:
@@ -79,6 +84,8 @@ class AsyncStep:
 
 
 class AsyncPipeline:
+    """The pipeline of :class:`AsyncStep` that will process items through the steps"""
+
     def __init__(self, max_items: int = 0, error_listener: Callable[[Exception], None] = None):
         self.steps: list[AsyncStep] = []
         self._put_count: int = 0

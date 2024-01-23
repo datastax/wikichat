@@ -1,3 +1,9 @@
+"""
+Arguments used by the command functions.
+
+This module is loaded by the CLI to understand what command line options to expose via argparse. It should not
+load other parts of the wikichat application.
+"""
 from dataclasses import dataclass, field
 
 from dataclasses_json import dataclass_json
@@ -49,7 +55,7 @@ class EmbedAndSearchArgs():
                        metadata={
                            "help": 'Limit to use for ANN search.'
                        })
-    filter_json: str = field(default= "",
+    filter_json: str = field(default="",
                              metadata={
                                  "help": 'JSON string to parse to create a filter for the ANN search.'
                              })
@@ -58,14 +64,14 @@ class EmbedAndSearchArgs():
     def __post_init__(self):
         self._filter = None if not self.filter_json else json.loads(self.filter_json)
 
+
 @dataclass_json
 @dataclass
 class SuggestedSearchArgs():
-
     repeats: int = field(default=3,
-                       metadata={
-                           "help": 'Number of times to search using a new suggested article, 0 for continuous.'
-                       })
+                         metadata={
+                             "help": 'Number of times to search using a new suggested article, 0 for continuous.'
+                         })
 
     limit: int = field(default=5,
                        metadata={
@@ -73,6 +79,6 @@ class SuggestedSearchArgs():
                        })
 
     delay_secs: float = field(default=2,
-                          metadata={
-                            "help": 'Delay between searches.'
-                          })
+                              metadata={
+                                  "help": 'Delay between searches.'
+                              })

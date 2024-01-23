@@ -47,11 +47,11 @@ const PromptSuggestionButton = ({ category, question, onClick }: Props) => {
   return (
     <button
       onClick={onClick}
-      className={`${category} flex flex-col border justify-center gap-1 md:gap-2 text-sm rounded-lg w-full md:w-64 md:h-44 p-4 md:px-8 focus:outline-none focus:shadow-outline`}
+      className={`${category} grid grid-rows-[min-content_auto] md:grid-rows-[min-content_auto_auto] border gap-2 text-sm rounded-xl p-4 text-left focus:outline-none focus:shadow-outline`}
     >
       <span className='hidden md:block'>{categoryIcon(category)}</span>
       {question}
-      <span className='self-end'><ArrowRight size={20} /></span>
+      <span className='justify-self-end self-end'><ArrowRight size={20} /></span>
     </button>
   );
 };

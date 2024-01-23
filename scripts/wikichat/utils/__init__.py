@@ -5,7 +5,7 @@ from typing import Any, Generator, Callable
 def batch_list(full_list: list[Any], batch_size: int, enumerate_batches: bool = False) -> Generator[
     list[Any] | tuple[int, list[Any]], None, None]:
     """
-    Yield successive n-sized chunks from l.
+    Yield successive n-sized chunks from a list.
     """
     batch_count: int = 0
     for offset in range(0, len(full_list), batch_size):

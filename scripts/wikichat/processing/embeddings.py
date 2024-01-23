@@ -3,10 +3,10 @@ Initialise and call the Cohere client to get embeddings
 """
 import logging
 import os
-from dotenv import load_dotenv
 
 import cohere
 from cohere.responses import Embeddings
+from dotenv import load_dotenv
 
 load_dotenv()
 
