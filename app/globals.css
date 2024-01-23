@@ -91,12 +91,13 @@
   }
 
   body {
+    font-family: 'Space Grotesk', sans-serif;
     background: var(--background-body);
     color: var(--primary);
   }
 
   .chatbot-header {
-    border-bottom: 1px solid var(--border-primary);;
+    border-bottom: 1px solid var(--border-primary);
   }
 
   .chatbot-header svg {
