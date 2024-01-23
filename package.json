@@ -12,6 +12,7 @@
   "dependencies": {
     "@bugsnag/js": "^7.22.2",
     "@datastax/astra-db-ts": "0.1.2",
+    "@fontsource/space-grotesk": "^5.0.16",
     "@headlessui/react": "^1.7.18",
     "@langchain/cohere": "^0.0.2",
     "@langchain/community": "^0.0.14",
