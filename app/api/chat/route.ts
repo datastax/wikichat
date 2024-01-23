@@ -1,4 +1,3 @@
-import Bugsnag from "@bugsnag/js";
 import { CohereEmbeddings } from "@langchain/cohere";
 import { Document } from "@langchain/core/documents";
 import { 
@@ -20,13 +19,8 @@ const {
   ASTRA_DB_APPLICATION_TOKEN,
   ASTRA_DB_ENDPOINT,
   COHERE_API_KEY,
-  BUGSNAG_API_KEY,
   OPENAI_API_KEY,
 } = process.env;
-
-if (BUGSNAG_API_KEY) {
-  Bugsnag.start({ apiKey: BUGSNAG_API_KEY })
-}
 
 interface ChainInput {
   chat_history: string;
@@ -157,9 +151,6 @@ export async function POST(req: Request) {
 
     return new StreamingTextResponse(stream);
   } catch (e) {
-    if (BUGSNAG_API_KEY) {
-      Bugsnag.notify(e);
-    }
     throw e;
   }
 }
