@@ -1,11 +1,13 @@
-import asyncio
+"""
+This file contains the code to setup the database. It will create the collections if they don't exist, and truncate them if they do.
+
+Importing the module initialises the database.
+"""
 import logging
 import os
-from typing import Callable
-
-from dotenv import load_dotenv
 
 from astrapy.db import AstraDB, AstraDBCollection
+from dotenv import load_dotenv
 
 import wikichat
 
@@ -36,16 +38,19 @@ SUGGESTIONS_COLLECTION = AstraDBCollection(
     collection_name=_ARTICLE_SUGGESTIONS_NAME, astra_db=ASTRA_DB
 )
 
-_ALL_COLLECTIONS: list[AstraDBCollection] = [EMBEDDINGS_COLLECTION, METADATA_COLLECTION,SUGGESTIONS_COLLECTION]
+_ALL_COLLECTIONS: list[AstraDBCollection] = [EMBEDDINGS_COLLECTION, METADATA_COLLECTION, SUGGESTIONS_COLLECTION]
 _ROTATED_COLLECTIONS: list[AstraDBCollection] = [EMBEDDINGS_COLLECTION, METADATA_COLLECTION]
+
 
 async def truncate_all_collections() -> None:
     for collection in _ALL_COLLECTIONS:
         await try_truncate_collection(collection)
 
+
 async def truncate_rotated_collections() -> None:
     for collection in _ROTATED_COLLECTIONS:
         await try_truncate_collection(collection)
+
 
 async def try_truncate_collection(collection: AstraDBCollection) -> None:
     # This can timeout sometimes, so lets retry :)
@@ -53,7 +58,7 @@ async def try_truncate_collection(collection: AstraDBCollection) -> None:
         try:
             logging.info(f"Attempt {i} Truncating collection {collection.collection_name}")
             await wikichat.utils.wrap_blocking_io(
-                lambda : collection.delete_many({})
+                lambda: collection.delete_many({})
             )
             break
         except Exception:

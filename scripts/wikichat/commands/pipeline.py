@@ -1,4 +1,6 @@
-"""Commands that are run from the command line args"""
+"""
+COmmands that process articles through the pipeline
+"""
 import json
 import logging
 from typing import Any
@@ -17,7 +19,6 @@ WIKIPEDIA_CHANGES_URL = 'https://stream.wikimedia.org/v2/stream/recentchange'
 
 # ======================================================================================================================
 # Commands
-# These are called with a pipeline to run on and CommandArgs
 # ======================================================================================================================
 
 async def load_base_data(pipeline: AsyncPipeline, args: LoadPipelineArgs) -> bool:
@@ -69,7 +70,7 @@ async def listen_for_changes(pipeline: AsyncPipeline, args: CommonPipelineArgs) 
                 # see https://github.com/aio-libs/aiohttp/issues/4581
                 # there seems to be no work around for this yet (Jen 2024) so just retry
                 logging.debug("Error in event source, retrying see https://github.com/aio-libs/aiohttp/issues/4581",
-                                exc_info=True)
+                              exc_info=True)
                 pass
     return False
 
