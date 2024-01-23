@@ -58,7 +58,7 @@ export default function Home() {
   };
 
   return (
-    <main className={`${category} flex h-screen flex-col items-center justify-center px-3 py-6 md:px-6`}>
+    <main className={`${category} flex h-screen flex-col items-center justify-center py-6`}>
       <section className='flex flex-col bg-body origin:w-[1200px] w-full origin:h-[800px] h-full rounded-3xl border overflow-y-auto scrollbar'>
         <Navbar 
           llm={llm}

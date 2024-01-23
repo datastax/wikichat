@@ -31,8 +31,8 @@ const Navbar = ({ llm, setConfiguration, theme, setTheme }: Props): JSX.Element 
     };
 
   
-    return <nav className="flex flex-col md:flex-row gap-6 rounded-t-3xl bg-body items-center md:items-start sticky top-0 z-10 p-6 md:px-16 md:pt-16">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" width="225" height="33" viewBox="0 0 225 33">
+    return <nav className="flex flex-col md:flex-row gap-3 md:gap-6 rounded-t-3xl bg-body items-center md:items-start sticky top-0 z-10 p-6 md:px-16 md:pt-16">
+      <svg className="w-[180px] md:w-[225px]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 225 33">
         <path
           fill="currentColor"
           fillRule="evenodd"
