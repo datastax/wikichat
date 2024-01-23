@@ -70,6 +70,10 @@
     color: var(--primary);
   }
 
+  .input {
+    background-color: var(--background-body)
+  }
+
   .dot-flashing {
     position: relative;
     width: var(--processing-dot-size);

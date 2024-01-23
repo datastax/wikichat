@@ -85,7 +85,7 @@ export default function Home() {
           <form className='flex h-[40px] gap-2' onSubmit={handleSend}>
             <div className='relative flex-1'>
               <input
-                className='bg-transparent border-tertiary hover:border-primary focus:border-primary block border w-full text-sm md:text-base outline-none bg-transparent rounded-full py-2 px-4'
+                className='input border-tertiary hover:border-primary focus:border-primary block border w-full text-sm md:text-base outline-none bg-transparent rounded-full py-2 px-4'
                 onChange={handleInputChange}
                 placeholder='Enter your question...'
                 value={input}

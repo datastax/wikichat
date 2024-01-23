@@ -4,7 +4,7 @@ const LoadingBubble:JSXElementConstructor<any> = forwardRef(function LoadingBubb
 
   return (
     <div ref={ref  as RefObject<HTMLDivElement>} className={'relative mr-24 md:mr-52'}>
-      <div className="outline p-3 max-w-fit rounded-t-xl mr-auto rounded-br-xl">
+      <div className="border p-3 max-w-fit rounded-t-xl mr-auto rounded-br-xl">
         <div className="w-6 h-6 flex items-center justify-center">
             <div className="dot-flashing" />
         </div>

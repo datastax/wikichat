@@ -13,7 +13,7 @@ const Bubble:JSXElementConstructor<any> = forwardRef(function Bubble({ content, 
   return (
     <div ref={ref  as RefObject<HTMLDivElement>} className={`relative ${isUser ? 'ml-24 md:ml-52' : 'mr-24 md:mr-52'}`}>
       <Markdown
-        className={`outline p-3 max-w-fit rounded-t-xl ${isUser ? 'ml-auto bg-bg-2 rounded-bl-xl' : 'mr-auto rounded-br-xl'}${hasSource ? ' mb-8' : ''}`}
+        className={`border p-3 max-w-fit rounded-t-xl ${isUser ? 'ml-auto bg-bg-2 rounded-bl-xl' : 'mr-auto rounded-br-xl'}${hasSource ? ' mb-8' : ''}`}
         remarkPlugins={[remarkGfm]}
         components={{
           a({ href, children }) {
