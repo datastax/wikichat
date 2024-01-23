@@ -1,14 +1,18 @@
+"""
+Utility commands for interacting with the database to view when has been written.
+
+These are not used by the wikichat application, but are useful for debugging and understanding what is in the database.
+"""
 import asyncio
 import json
 import logging
 
 from wikichat import database
-from wikichat.processing import embeddings
+from wikichat.commands.model import EmbedAndSearchArgs, SuggestedSearchArgs
 from wikichat.database import EMBEDDINGS_COLLECTION, SUGGESTIONS_COLLECTION
+from wikichat.processing import embeddings
 from wikichat.processing.model import RecentArticles
 from wikichat.utils import wrap_blocking_io
-
-from wikichat.commands.model import EmbedAndSearchArgs, SuggestedSearchArgs
 
 
 # ======================================================================================================================
@@ -61,7 +65,7 @@ async def suggested_search(args: SuggestedSearchArgs) -> None:
         question_vector: list[float] = question_vectors[0]
 
         resp = await wrap_blocking_io(
-            lambda : EMBEDDINGS_COLLECTION.find(
+            lambda: EMBEDDINGS_COLLECTION.find(
                 sort={"$vector": question_vector},
                 projection={"title": 1, "url": 1, "content": 1},
                 options={"limit": args.limit})

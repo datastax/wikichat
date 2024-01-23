@@ -1,3 +1,11 @@
+"""
+The command line options are configured there, they are CLICommand and PipelineCommand objects.
+
+The CLICommands are abstractions for running the code in the commands/ module. The code in here should not
+cause any of the commands to be loaded until they are invoked by the command line. The exception is the
+commands/model which is used to build the argparse options.
+
+"""
 import argparse
 import asyncio
 import logging
@@ -9,8 +17,15 @@ from wikichat.commands import model
 from wikichat.utils.metrics import METRICS
 
 
+# ======================================================================================================================
+# Model
+# ======================================================================================================================
+
 @dataclass
 class CliCommand:
+    """Base for all commands we create in argparse.
+
+     argparse calls these subcommands"""
     name: str
     help: str
     func_supplier: Callable
@@ -66,6 +81,9 @@ class PipelineCommand(CliCommand):
             logging.debug("Metrics task cancelled")
         return
 
+# ======================================================================================================================
+# Delayed loading of the command functions to avoid circular imports
+# ======================================================================================================================
 
 def _load_base_data() -> Callable:
     from wikichat.commands import pipeline
@@ -94,6 +112,10 @@ def _suggested_search() -> Callable:
     from wikichat.commands import database
     return database.suggested_search
 
+# ======================================================================================================================
+# The commands we want to make available on the command line, an object for each command,
+# and the functions to configure the argparse
+# ======================================================================================================================
 
 ALL_COMMANDS: list[CliCommand] = [
     PipelineCommand(

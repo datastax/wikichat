@@ -1,6 +1,7 @@
-"""This file contains the dataclasses used to process the articles.
+"""
+This file contains the dataclasses used to process the articles and the classes we store in Astra.
 
-In general, they only hold the data and how to get/put in the DB, not the logic.
+These should be plain data classes, and should not import other parts of the wikichat application.
 """
 import asyncio
 from dataclasses import dataclass, field, replace
@@ -17,6 +18,7 @@ class ArticleMetadata:
     """Metadata about an article we may want to process"""
     url: str
     title: str = None
+
 
 @dataclass
 class Article:
@@ -164,13 +166,13 @@ class RecentArticles:
     def __post_init__(self):
         self._lock = asyncio.Lock()
 
-    async def update_and_clone(self, article: ChunkedArticleMetadataOnly, clear_list: bool=False) -> 'RecentArticles':
+    async def update_and_clone(self, article: ChunkedArticleMetadataOnly, clear_list: bool = False) -> 'RecentArticles':
         max_recent_articles: int = 5
         async with self._lock:
             # allow None because it is called like this when switching collections
             if article is not None:
                 self.recent_articles = [RecentArticle.from_article_metadata(article)] + self.recent_articles[
-                                                                                    :max_recent_articles - 1]
+                                                                                        :max_recent_articles - 1]
             elif clear_list:
                 self.recent_articles = []
             return replace(self)

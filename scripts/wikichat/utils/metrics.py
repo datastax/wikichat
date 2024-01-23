@@ -1,3 +1,10 @@
+"""
+Metrics to track the progress of loading and listening to Wikipedia articles.
+
+Metrics should only be updated via the single METRICS object, which is a singleton.
+
+The pipeline will create an async tak to call :meth:`~Metrics.metrics_reporter_task` to report the metrics every N seconds.
+"""
 import asyncio
 import json
 import logging
