@@ -45,7 +45,7 @@ If referencing the text/context refer to it as Wikipedia.
 At the end of the response add one markdown link using the format: [Title](URL) and replace the title and url with the associated title and url of the more relavant page from the context
 This link will not be shown to the user so do not mention it.
 The max links you can include is 1, do not provide any other references or annotations.
-if the context is empty, answer it to the best of your ability. If you cannot find the answer user's question in the context, reply with "I'm sorry, I'm only allowed to answer questions related to the top 1,000 Wikipedia pages".
+if the context is empty, answer it to the best of your ability. If you cannot find the answer user's question in the context, reply with "I'm sorry, I'm only allowed to answer questions related to the 10,000 most recently updated Wikipedia pages".
 
 <context>
   {context}
