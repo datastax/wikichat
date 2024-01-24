@@ -1,6 +1,6 @@
 import { AstraDB } from "@datastax/astra-db-ts";
 import OpenAI from "openai";
-import type { ChatCompletionCreateParams } from 'openai/resources/chat';
+import type { ChatCompletionCreateParams } from "openai/resources/chat";
 import { CATEGORIES } from "../../../utils/consts";
 
 const {
