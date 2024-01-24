@@ -16,7 +16,7 @@ This project is a starter for creating a chatbot using Astra DB. It's designed t
 - An Astra DB account. You can [create one here](https://astra.datastax.com/register).
     - An Astra Vector Database
 - An OpenAI Account and API key.
-- A Cohere Account and API key.
+- A Cohere Account and API key. Note that due to the large volume of ingested data, you'll need a paid plan.
 
 ### Setup
 
@@ -28,6 +28,9 @@ This project is a starter for creating a chatbot using Astra DB. It's designed t
         - To create a new token go to your database's `Connect` tab and click `Generate Token`. (your Application Token begins with `AstraCS:...`)
     - `OPENAI_API_KEY`: Your OpenAI API key.
     - `COHERE_API_KEY`: Your Cohere API key for embeddings.
+    - `LANGCHAIN_TRACING_V2` (optional): Set to `true` to enable tracing
+    - `LANGCHAIN_SESSION` (optional): The LangSmith project that will receive traced runs.
+    - `LANGCHAIN_API_KEY` (optional): LangSmith API key
 4. Populate your database by following the instructions [here](https://github.com/datastax/wikichat/blob/main/scripts/README.md)
 
 ### Running the Project
