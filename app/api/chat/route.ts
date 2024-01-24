@@ -146,12 +146,27 @@ export async function POST(req: Request) {
       new StringOutputParser(),
     ]).withConfig({ runName: "chatChain"});
 
+    let runIdResolver;
+    const runIdPromise = new Promise<string>((resolve) => {
+      runIdResolver = resolve;
+    });
     const stream = await chain.stream({
       chat_history: formatVercelMessages(previousMessages),
-      question: latestMessage, 
+      question: latestMessage,
+    }, {
+      callbacks: [{
+        handleChainStart(_chain, _inputs, runId) {
+          runIdResolver(runId);
+        },
+      }]
     });
+    const runId = await runIdPromise;
 
-    return new StreamingTextResponse(stream);
+    return new StreamingTextResponse(stream, {
+      headers: {
+        "x-langsmith-run-id": runId ?? "",
+      }
+    });
   } catch (e) {
     console.log(e)
     throw e;
