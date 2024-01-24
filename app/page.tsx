@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from 'react';
-import { ArrowCounterclockwise, Send } from 'react-bootstrap-icons';
+import { ArrowCounterclockwise, Tools, Send } from 'react-bootstrap-icons';
 import Bubble from '../components/Bubble'
 import { useChat, useCompletion } from 'ai/react';
 import Footer from '../components/Footer';
@@ -13,7 +13,15 @@ import Navbar from '../components/Navbar';
 
 export default function Home() {
   const [suggestions, setSuggestions] = useState<PromptSuggestion[]>([]);
-  const { append, messages, isLoading, input, handleInputChange, handleSubmit, setMessages } = useChat();
+  const [traceIsLoading, setTraceIsLoading] = useState(false);
+  const [runId, setRunId] = useState("");
+
+  const { append, messages, isLoading, input, handleInputChange, handleSubmit, setMessages } = useChat({
+    onResponse(response) {
+      setRunId(response.headers.get("x-langsmith-run-id"));
+    },
+  });
+
   const { complete } = useCompletion({
     onFinish: (prompt, completion) => {
       const parsed = JSON.parse(completion);
@@ -57,6 +65,37 @@ export default function Home() {
     setCategory('custom');
   };
 
+  const viewTrace = async () => {
+    try {
+      setTraceIsLoading(true);
+      if (traceIsLoading) {
+        return;
+      }
+      const response = await fetch("/api/get_trace", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          run_id: runId,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.code === 400) {
+        throw new Error("Unable to view trace");
+      } else {
+        const url = data.replace(/['"]+/g, "");
+        window.open(url, "_blank");
+        setTraceIsLoading(false);
+      }
+    } catch (e: any) {
+      console.error("Error:", e);
+      setTraceIsLoading(false);
+    }
+  };
+
   return (
     <main className={`${category} flex h-screen flex-col items-center justify-center py-6`}>
       <section className='flex flex-col bg-body origin:w-[1200px] w-full origin:h-[800px] h-full rounded-3xl border overflow-y-auto scrollbar'>
@@ -94,7 +133,13 @@ export default function Home() {
                 <Send size={20} />
               </button>
             </div>
-            <button onClick={handleReset}  className='bg-primary text-inverse hover:bg-primary-hover flex rounded-full items-center justify-center px-2.5 origin:px-3'>
+            {!!runId 
+              ? <button onClick={viewTrace} className='bg-primary text-inverse hover:bg-primary-hover flex rounded-full items-center justify-center px-2.5 origin:px-3'>
+                  <Tools size={20} />
+                  <span className='origin:block text-sm ml-2'>View trace</span>
+                </button> 
+              : ""}
+            <button onClick={handleReset} className='bg-primary text-inverse hover:bg-primary-hover flex rounded-full items-center justify-center px-2.5 origin:px-3'>
               <ArrowCounterclockwise size={20} />
               <span className='hidden origin:block text-sm ml-2'>New chat</span>
             </button>
