@@ -31,9 +31,9 @@ const Navbar = ({ llm, setConfiguration, theme, setTheme }: Props): JSX.Element 
     };
 
   
-    return <nav className="flex flex-col md:flex-row gap-6 items-center md:items-start">
+    return <nav className="flex flex-col md:flex-row gap-3 md:gap-6 rounded-t-3xl bg-body items-center md:items-start sticky top-0 z-10 p-6 md:px-16 md:pt-16">
       {/* WikiChat logo */}
-      <svg key={`wikichat-logo-${theme}`} width="225" height="32" viewBox="0 0 225 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg key={`wikichat-logo-${theme}`} className="w-[180px] md:w-[225px]" width="225" height="32" viewBox="0 0 225 32" fill="none" xmlns="http://www.w3.org/2000/svg">
          {/* W */}
         <path id="A" d="M198.382 31.2293L183.975 0L169.568 31.2293H198.382ZM192.432 27.4253H175.519L183.975 9.07145L192.432 27.4253Z" fill="currentColor"/>
         {/* I1 */}
