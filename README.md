@@ -23,7 +23,7 @@ This project is a starter for creating a chatbot using Astra DB. It's designed t
 1. Clone this repository to your local machine.
 2. Install the dependencies by running `npm install` in your terminal.
 3. Set up the following environment variables in your IDE or `.env` file:
-    - `ASTRA_DB_ENDPOINT`: Your Astra DB vector database id **_in a vector-enabled DB_**
+    - `ASTRA_DB_API_ENDPOINT`: Your Astra DB vector database id **_in a vector-enabled DB_**
     - `ASTRA_DB_APPLICATION_TOKEN`: The generated app token for your Astra database
         - To create a new token go to your database's `Connect` tab and click `Generate Token`. (your Application Token begins with `AstraCS:...`)
     - `OPENAI_API_KEY`: Your OpenAI API key.
@@ -41,6 +41,6 @@ To start the development server, run `npm run dev` in your terminal. Open [http:
 
 You can easily deploy your chatbot to Vercel by clicking the button below:
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/datastax/wikichat&env=ASTRA_DB_ENDPOINT,ASTRA_DB_APPLICATION_TOKEN,OPENAI_API_KEY,COHERE_API_KEY)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/datastax/wikichat&env=ASTRA_DB_API_ENDPOINT,ASTRA_DB_APPLICATION_TOKEN,OPENAI_API_KEY,COHERE_API_KEY)
 
 Remember to set your environment variables to the values obtained when setting up your Astra DB and OpenAI accounts.
