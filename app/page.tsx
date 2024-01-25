@@ -10,6 +10,7 @@ import PromptSuggestionRow, { PromptSuggestion } from '../components/PromptSugge
 import { Message } from 'ai';
 import LoadingBubble from '../components/LoadingBubble';
 import Navbar from '../components/Navbar';
+import hasLangsmithConfig from './api/hasLangsmithConfig';
 
 export default function Home() {
   const [suggestions, setSuggestions] = useState<PromptSuggestion[]>([]);
@@ -35,6 +36,8 @@ export default function Home() {
   });
   const { category, setCategory, theme, setTheme } = useTheme();
   const { llm, setConfiguration } = useConfiguration();
+
+  const isLangSmithEnabled = hasLangsmithConfig();
 
   const messagesEndRef = useRef(null);
 
@@ -133,7 +136,7 @@ export default function Home() {
                 <Send size={20} />
               </button>
             </div>
-            {!!runId 
+            {isLangSmithEnabled && !!runId 
               ? <button onClick={viewTrace} className='bg-primary text-inverse hover:bg-primary-hover flex rounded-full items-center justify-center px-2.5 origin:px-3'>
                   <Tools size={20} />
                   <span className='origin:block text-sm ml-2'>View trace</span>

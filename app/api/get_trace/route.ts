@@ -4,12 +4,16 @@ import { Client } from "langsmith";
 
 export const runtime = "edge";
 
-const client = new Client();
-
 const pollForRun = async (runId: string, retryCount = 0): Promise<string> => {
   await new Promise((resolve) =>
     setTimeout(resolve, retryCount * retryCount * 100),
   );
+  let client: Client;
+  try {
+    client = new Client();
+  } catch (e) {
+    throw new Error("Langsmith client failed to initialize.");
+  }
   try {
     await client.readRun(runId);
   } catch (e) {

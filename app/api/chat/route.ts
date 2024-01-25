@@ -15,7 +15,6 @@ import {
 } from "@langchain/community/vectorstores/astradb";
 
 import { StreamingTextResponse, Message } from "ai";
-import { AstraDB } from "@datastax/astra-db-ts";
 
 const {
   ASTRA_DB_APPLICATION_TOKEN,
