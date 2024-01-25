@@ -1,19 +1,21 @@
 import { CohereEmbeddings } from "@langchain/cohere";
+import { ChatOpenAI } from "@langchain/openai";
 import { Document } from "@langchain/core/documents";
+import { StringOutputParser } from "@langchain/core/output_parsers";
+import { PromptTemplate } from "@langchain/core/prompts";
 import { 
   RunnableBranch,
   RunnableLambda,
   RunnableMap, 
   RunnableSequence
 } from "@langchain/core/runnables";
-import { StringOutputParser } from "@langchain/core/output_parsers";
 import {
   AstraDBVectorStore,
   AstraLibArgs,
 } from "@langchain/community/vectorstores/astradb";
-import { ChatOpenAI } from "langchain/chat_models/openai";
-import { PromptTemplate } from "langchain/prompts";
+
 import { StreamingTextResponse, Message } from "ai";
+import { AstraDB } from "@datastax/astra-db-ts";
 
 const {
   ASTRA_DB_APPLICATION_TOKEN,
@@ -107,7 +109,7 @@ export async function POST(req: Request) {
 
     await vectorStore.initialize();
 
-    const astraRetriever = vectorStore.asRetriever(10);
+    const astraRetriever = vectorStore.asRetriever();
 
     const hasChatHistoryCheck = RunnableLambda.from(
       (input: ChainInput) => input.chat_history.length > 0
@@ -166,6 +168,7 @@ export async function POST(req: Request) {
       }
     });
   } catch (e) {
+    console.log(e)
     throw e;
   }
 }
