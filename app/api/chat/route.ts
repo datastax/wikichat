@@ -17,7 +17,7 @@ import { StreamingTextResponse, Message } from "ai";
 
 const {
   ASTRA_DB_APPLICATION_TOKEN,
-  ASTRA_DB_ENDPOINT,
+  ASTRA_DB_API_ENDPOINT,
   COHERE_API_KEY,
   OPENAI_API_KEY,
 } = process.env;
@@ -98,7 +98,7 @@ export async function POST(req: Request) {
     
     const astraConfig: AstraLibArgs = {
       token: ASTRA_DB_APPLICATION_TOKEN,
-      endpoint: ASTRA_DB_ENDPOINT,
+      endpoint: ASTRA_DB_API_ENDPOINT,
       collection: "article_embeddings",
       contentKey: "content",
     };

@@ -5,11 +5,11 @@ import { CATEGORIES } from "../../../utils/consts";
 
 const {
   ASTRA_DB_APPLICATION_TOKEN,
-  ASTRA_DB_ENDPOINT,
+  ASTRA_DB_API_ENDPOINT,
   OPENAI_API_KEY,
 } = process.env;
 
-const astraDb = new AstraDB(ASTRA_DB_APPLICATION_TOKEN, ASTRA_DB_ENDPOINT);
+const astraDb = new AstraDB(ASTRA_DB_APPLICATION_TOKEN, ASTRA_DB_API_ENDPOINT);
 
 const openai = new OpenAI({
   apiKey: OPENAI_API_KEY,
