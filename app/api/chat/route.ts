@@ -89,9 +89,6 @@ const openai = new OpenAI({
 });
 
 export async function POST(req: Request) {
-
-  console.log(ASTRA_DB_API_ENDPOINT)
-  console.log(ASTRA_DB_APPLICATION_TOKEN)
   try {
     const {messages, llm} = await req.json();
     const previousMessages = messages.slice(0, -1);
@@ -126,9 +123,6 @@ export async function POST(req: Request) {
       }
     }
 
-    console.log(question);
-    console.log(`${ASTRA_DB_API_ENDPOINT}/api/json/v1/default_keyspace/article_embeddings`)
-
     const vectorizeFindResp = await axios.post(
       `${ASTRA_DB_API_ENDPOINT}/api/json/v1/default_keyspace/article_embeddings`,
       {
@@ -138,7 +132,10 @@ export async function POST(req: Request) {
           },
           options: {
             limit: 5,
-            includeSimilarity: true,
+          },
+          projection: {
+            $vector: 0,
+            $vectorize: 0
           }
         },
       },
@@ -156,17 +153,15 @@ export async function POST(req: Request) {
     //   },
     //   limit: 5,
     // });
-    
-    // console.log(vectorizeFindResp);
 
-    const docs = vectorizeFindResp.data;
+    const data = vectorizeFindResp.data;
 
-    console.log(docs);
+    const docs = data?.data.documents;
 
     const formattedDocs = docs?.map((doc) => {
-      return `Title: ${doc.metadata.title}
-      URL: ${doc.metadata.url}
-      Content: ${doc.pageContent}`;
+      return `Title: ${doc.title}
+      URL: ${doc.url}
+      Content: ${doc.content}`;
     });
 
     const context = formattedDocs.join("\n\n");
