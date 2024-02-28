@@ -57,23 +57,6 @@ class ChunkedArticleDiff:
     deleted_chunks: list[ChunkMetadata] = field(default_factory=list)
     unchanged_chunks: list[Chunk] = field(default_factory=list)
 
-
-# @dataclass
-# class VectoredChunk:
-#     """A chunk that has been vectorized"""
-#     vector: list[float]
-#     chunked_article: ChunkedArticle
-#     chunk: Chunk
-#
-#
-# @dataclass
-# class VectoredChunkedArticleDiff:
-#     """For this chunked article, the deleted chunks and new chunks including their vectorized form """
-#     chunked_article: ChunkedArticle
-#     new_chunks: list[VectoredChunk] = field(default_factory=list)
-#     deleted_chunks: list[ChunkMetadata] = field(default_factory=list)
-
-
 # ======================================================================================================================
 # Documents we store in the DB
 # ======================================================================================================================
@@ -98,19 +81,6 @@ class ChunkedArticleMetadataOnly:
             chunks_metadata={chunk.metadata.hash: chunk.metadata for chunk in chunked_article.chunks},
             suggested_question_chunks=chunked_article.chunks[:5]
         )
-
-    @classmethod
-    # def from_vectored_diff(cls, diff: VectoredChunkedArticleDiff) -> 'ChunkedArticleMetadataOnly':
-    #     if diff.new_chunks:
-    #         suggested_chunks = [v_chunk.chunk for v_chunk in diff.new_chunks[:5]]
-    #     else:
-    #         suggested_chunks = diff.chunked_article.chunks[:5]
-    #     return cls(
-    #         _id=diff.chunked_article.article.metadata.url,
-    #         article_metadata=diff.chunked_article.article.metadata,
-    #         chunks_metadata={chunk.metadata.hash: chunk.metadata for chunk in diff.chunked_article.chunks},
-    #         suggested_question_chunks=suggested_chunks
-    #     )
 
     @classmethod
     def from_chunked_diff(cls, diff: ChunkedArticleDiff) -> 'ChunkedArticleMetadataOnly':
