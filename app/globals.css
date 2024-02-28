@@ -126,6 +126,10 @@
     }
   }
 
+  .nvida {
+    color: var(--primary);
+  }
+
   /* category backgrounds */
   .history {
     background-color: var(--sky);
