@@ -82,7 +82,7 @@ const formatVercelMessages = (chatHistory: Message[]) => {
   return formattedDialogueTurns.join("\n");
 };
 
-// const client = new AstraDB(ASTRA_DB_APPLICATION_TOKEN, ASTRA_DB_API_ENDPOINT);
+const client = new AstraDB(ASTRA_DB_APPLICATION_TOKEN, ASTRA_DB_API_ENDPOINT);
 
 const openai = new OpenAI({
   apiKey: OPENAI_API_KEY,
@@ -94,7 +94,7 @@ export async function POST(req: Request) {
     const previousMessages = messages.slice(0, -1);
     const latestMessage = messages[messages?.length - 1]?.content;
 
-    // const collection = await client.collection("article_embeddings");
+    const collection = await client.collection("article_embeddings");
 
     const chat_history = formatVercelMessages(previousMessages);
 
@@ -123,45 +123,52 @@ export async function POST(req: Request) {
       }
     }
 
-    const vectorizeFindResp = await axios.post(
-      `${ASTRA_DB_API_ENDPOINT}/api/json/v1/default_keyspace/article_embeddings`,
-      {
-        find: {
-          sort: {
-            $vectorize: question
-          },
-          options: {
-            limit: 5,
-          },
-          projection: {
-            $vector: 0,
-            $vectorize: 0
-          }
-        },
-      },
-      {
-        headers: {
-            'x-embedding-api-key': NVIDIA_API_KEY,
-            token: ASTRA_DB_APPLICATION_TOKEN
-        }
-      }
-    )
-
-    // const cursor = collection.find({}, {
-    //   sort: {
-    //     $vectorize: question
+    // const vectorizeFindResp = await axios.post(
+    //   `${ASTRA_DB_API_ENDPOINT}/api/json/v1/default_keyspace/article_embeddings`,
+    //   {
+    //     find: {
+    //       sort: {
+    //         $vectorize: question
+    //       },
+    //       options: {
+    //         limit: 5,
+    //       },
+    //       projection: {
+    //         $vector: 0,
+    //         $vectorize: 0
+    //       }
+    //     },
     //   },
-    //   limit: 5,
-    // });
+    //   {
+    //     headers: {
+    //         'x-embedding-api-key': NVIDIA_API_KEY,
+    //         token: ASTRA_DB_APPLICATION_TOKEN
+    //     }
+    //   }
+    // )
 
-    const data = vectorizeFindResp.data;
+    const cursor = collection.find({}, {
+      sort: {
+        $vectorize: question
+      },
+      limit: 5,
+      projection: {
+        $vector: 0,
+      }
+    });
 
-    const docs = data?.data.documents;
+    const documents = await cursor.toArray();
 
-    const formattedDocs = docs?.map((doc) => {
+    console.log(documents);
+
+    // const data = vectorizeFindResp.data;
+
+    // const docs = data?.data.documents;
+
+    const formattedDocs = documents?.map((doc) => {
       return `Title: ${doc.title}
       URL: ${doc.url}
-      Content: ${doc.content}`;
+      Content: ${doc.$vectorize}`;
     });
 
     const context = formattedDocs.join("\n\n");
