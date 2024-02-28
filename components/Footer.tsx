@@ -36,7 +36,7 @@ const Footer = () => {
           and
         </span>
         <svg
-          enable-background="new 0 0 974.7 179.7"
+          enableBackground="new 0 0 974.7 179.7"
           height="14"
           viewBox="0 0 946.40001 82.825717"
           width="74.9" xmlns="http://www.w3.org/2000/svg"
