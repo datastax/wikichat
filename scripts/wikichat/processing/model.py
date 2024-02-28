@@ -58,20 +58,20 @@ class ChunkedArticleDiff:
     unchanged_chunks: list[Chunk] = field(default_factory=list)
 
 
-@dataclass
-class VectoredChunk:
-    """A chunk that has been vectorized"""
-    vector: list[float]
-    chunked_article: ChunkedArticle
-    chunk: Chunk
-
-
-@dataclass
-class VectoredChunkedArticleDiff:
-    """For this chunked article, the deleted chunks and new chunks including their vectorized form """
-    chunked_article: ChunkedArticle
-    new_chunks: list[VectoredChunk] = field(default_factory=list)
-    deleted_chunks: list[ChunkMetadata] = field(default_factory=list)
+# @dataclass
+# class VectoredChunk:
+#     """A chunk that has been vectorized"""
+#     vector: list[float]
+#     chunked_article: ChunkedArticle
+#     chunk: Chunk
+#
+#
+# @dataclass
+# class VectoredChunkedArticleDiff:
+#     """For this chunked article, the deleted chunks and new chunks including their vectorized form """
+#     chunked_article: ChunkedArticle
+#     new_chunks: list[VectoredChunk] = field(default_factory=list)
+#     deleted_chunks: list[ChunkMetadata] = field(default_factory=list)
 
 
 # ======================================================================================================================
@@ -100,9 +100,22 @@ class ChunkedArticleMetadataOnly:
         )
 
     @classmethod
-    def from_vectored_diff(cls, diff: VectoredChunkedArticleDiff) -> 'ChunkedArticleMetadataOnly':
+    # def from_vectored_diff(cls, diff: VectoredChunkedArticleDiff) -> 'ChunkedArticleMetadataOnly':
+    #     if diff.new_chunks:
+    #         suggested_chunks = [v_chunk.chunk for v_chunk in diff.new_chunks[:5]]
+    #     else:
+    #         suggested_chunks = diff.chunked_article.chunks[:5]
+    #     return cls(
+    #         _id=diff.chunked_article.article.metadata.url,
+    #         article_metadata=diff.chunked_article.article.metadata,
+    #         chunks_metadata={chunk.metadata.hash: chunk.metadata for chunk in diff.chunked_article.chunks},
+    #         suggested_question_chunks=suggested_chunks
+    #     )
+
+    @classmethod
+    def from_chunked_diff(cls, diff: ChunkedArticleDiff) -> 'ChunkedArticleMetadataOnly':
         if diff.new_chunks:
-            suggested_chunks = [v_chunk.chunk for v_chunk in diff.new_chunks[:5]]
+            suggested_chunks = diff.new_chunks[:5]
         else:
             suggested_chunks = diff.chunked_article.chunks[:5]
         return cls(
@@ -111,7 +124,6 @@ class ChunkedArticleMetadataOnly:
             chunks_metadata={chunk.metadata.hash: chunk.metadata for chunk in diff.chunked_article.chunks},
             suggested_question_chunks=suggested_chunks
         )
-
 
 @dataclass_json
 @dataclass
@@ -122,23 +134,19 @@ class EmbeddingDocument:
     _id: str
     url: str
     title: str
-    document_id: str
     chunk_index: int
-    content: str
-    # vector needs to be $vector when sent to the DB
+    # vector needs to be $vectorize when sent to the DB
     # see https://lidatong.github.io/dataclasses-json/#encode-or-decode-using-a-different-name
-    vector: list[float] = field(metadata=config(field_name="$vector"))
+    vectorize: str = field(metadata=config(field_name="$vectorize"))
 
     @classmethod
-    def from_vectored_chunk(cls, vectored_chunk: VectoredChunk) -> 'EmbeddingDocument':
+    def from_chunk(cls, article: Article, chunk: Chunk) -> 'EmbeddingDocument':
         return cls(
-            _id=vectored_chunk.chunk.metadata.hash,
-            url=vectored_chunk.chunked_article.article.metadata.url,
-            title=vectored_chunk.chunked_article.article.metadata.title,
-            document_id=vectored_chunk.chunked_article.article.metadata.url,
-            chunk_index=vectored_chunk.chunk.metadata.index,
-            content=vectored_chunk.chunk.content,
-            vector=vectored_chunk.vector
+            _id=chunk.metadata.hash,
+            url=article.metadata.url,
+            title=article.metadata.title,
+            chunk_index=chunk.metadata.index,
+            vectorize=chunk.content
         )
 
 

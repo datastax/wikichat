@@ -4,6 +4,9 @@ Arguments used by the command functions.
 This module is loaded by the CLI to understand what command line options to expose via argparse. It should not
 load other parts of the wikichat application.
 """
+
+import json
+
 from dataclasses import dataclass, field
 
 from dataclasses_json import dataclass_json
