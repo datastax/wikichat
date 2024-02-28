@@ -12,10 +12,10 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 import wikichat.utils
 from wikichat.database import EMBEDDINGS_COLLECTION, METADATA_COLLECTION, SUGGESTIONS_COLLECTION
-from wikichat.processing import embeddings, wikipedia
+from wikichat.processing import wikipedia
 from wikichat.processing.model import ArticleMetadata, Article, ChunkedArticle, Chunk, ChunkMetadata, \
     ChunkedArticleDiff, \
-    ChunkedArticleMetadataOnly, VectoredChunkedArticleDiff, VectoredChunk, EmbeddingDocument, RECENT_ARTICLES, \
+    ChunkedArticleMetadataOnly, EmbeddingDocument, RECENT_ARTICLES, \
     RecentArticles
 from wikichat.utils.metrics import METRICS
 from wikichat.utils.pipeline import AsyncPipeline
@@ -110,61 +110,61 @@ async def calc_chunk_diff(chunked_article: ChunkedArticle) -> ChunkedArticleDiff
         unchanged_chunks=unchanged_chunks)
 
 
-async def vectorize_diff(article_diff: ChunkedArticleDiff) -> VectoredChunkedArticleDiff | None:
-    """Calc the vectors for all the chunks we want to store in the db"""
+# async def vectorize_diff(article_diff: ChunkedArticleDiff) -> VectoredChunkedArticleDiff | None:
+#     """Calc the vectors for all the chunks we want to store in the db"""
+#
+#     logging.debug(f"Getting embeddings for article {article_diff.chunked_article.article.metadata.url} "
+#                   "which has {len(article_diff.new_chunks)} new chunks")
+#
+#     vectors = await embeddings.get_embeddings([chunk.content for chunk in article_diff.new_chunks])
+#     await METRICS.update_chunks(chunks_vectorized=len(vectors))
+#
+#     # We can get vectors with all zeros, this could be because overloaded or objectionable content
+#     # this will be rare, so count the non zero vectors and if we have any zero vectors skip the article
+#     non_zero_vectors = list(vector for vector in vectors if any(x != 0 for x in vector))
+#     zero_vector_count = len(vectors) > len(non_zero_vectors)
+#     if zero_vector_count:
+#         logging.debug(
+#             f"Skipping article {article_diff.chunked_article.article.metadata.url} cohere returned {zero_vector_count} zero vectors")
+#         for i in range(len(vectors)):
+#             if all([x == 0 for x in vectors[i]]):
+#                 logging.debug(
+#                     f"Zero vector for chunk in {article_diff.chunked_article.article.metadata.url} content= {article_diff.new_chunks[i].content}")
+#         await METRICS.update_article(zero_vectors=1)
+#         return None
+#
+#     return VectoredChunkedArticleDiff(
+#         chunked_article=article_diff.chunked_article,
+#         new_chunks=[
+#             VectoredChunk(vector=vector, chunked_article=article_diff.chunked_article, chunk=chunk)
+#             for vector, chunk, in zip(vectors, article_diff.new_chunks, )
+#         ],
+#         deleted_chunks=article_diff.deleted_chunks
+#     )
 
-    logging.debug(f"Getting embeddings for article {article_diff.chunked_article.article.metadata.url} "
-                  "which has {len(article_diff.new_chunks)} new chunks")
 
-    vectors = await embeddings.get_embeddings([chunk.content for chunk in article_diff.new_chunks])
-    await METRICS.update_chunks(chunks_vectorized=len(vectors))
-
-    # We can get vectors with all zeros, this could be because overloaded or objectionable content
-    # this will be rare, so count the non zero vectors and if we have any zero vectors skip the article
-    non_zero_vectors = list(vector for vector in vectors if any(x != 0 for x in vector))
-    zero_vector_count = len(vectors) > len(non_zero_vectors)
-    if zero_vector_count:
-        logging.debug(
-            f"Skipping article {article_diff.chunked_article.article.metadata.url} cohere returned {zero_vector_count} zero vectors")
-        for i in range(len(vectors)):
-            if all([x == 0 for x in vectors[i]]):
-                logging.debug(
-                    f"Zero vector for chunk in {article_diff.chunked_article.article.metadata.url} content= {article_diff.new_chunks[i].content}")
-        await METRICS.update_article(zero_vectors=1)
-        return None
-
-    return VectoredChunkedArticleDiff(
-        chunked_article=article_diff.chunked_article,
-        new_chunks=[
-            VectoredChunk(vector=vector, chunked_article=article_diff.chunked_article, chunk=chunk)
-            for vector, chunk, in zip(vectors, article_diff.new_chunks, )
-        ],
-        deleted_chunks=article_diff.deleted_chunks
-    )
-
-
-async def store_article_diff(article_diff: VectoredChunkedArticleDiff) -> VectoredChunkedArticleDiff:
+async def store_article_diff(chunked_diff: ChunkedArticleDiff) -> ChunkedArticleDiff:
     # HACK - update the meta data first, if there is an error we will fail before we insert the chunks
     # this is not ideal, but I think it will reduce the amount of chunk collisions under load
-    await update_article_metadata(article_diff)
-    await insert_vectored_chunks(article_diff.new_chunks)
-    await delete_vectored_chunks(article_diff.deleted_chunks)
+    await update_article_metadata(chunked_diff)
+    await insert_chunks(chunked_diff.chunked_article. article, chunked_diff.new_chunks)
+    await delete_vectored_chunks(chunked_diff.deleted_chunks)
 
-    return article_diff
+    return chunked_diff
 
 
-async def insert_vectored_chunks(vectored_chunks: list[VectoredChunk]) -> None:
+async def insert_chunks(article: Article, chunks: list[Chunk]) -> None:
     # special logger to catch any places where we try to overwrite an existing chunk in the db
     existing_chunk_logger = logging.getLogger('existing_chunks')
 
     batch_size = 20
-    logging.debug(f"Starting inserting {len(vectored_chunks)} vectored chunks into db using batches of {batch_size}")
+    logging.debug(f"Starting inserting {len(chunks)} chunks into db using batches of {batch_size}")
 
     start_all = datetime.now()
-    batch: list[VectoredChunk]
-    for batch_count, batch in wikichat.utils.batch_list(vectored_chunks, batch_size, enumerate_batches=True):
+    batch: list[Chunk]
+    for batch_count, batch in wikichat.utils.batch_list(chunks, batch_size, enumerate_batches=True):
         start_batch = datetime.now()
-        article_embeddings: list[EmbeddingDocument] = list(map(EmbeddingDocument.from_vectored_chunk, batch))
+        article_embeddings: list[EmbeddingDocument] = [EmbeddingDocument.from_chunk(article, chunk) for chunk in batch]
 
         # use options.ordered = false so documents can be inserted in parallel
         logging.debug(f"Inserting batch number {batch_count} with size {len(batch)}")
@@ -199,9 +199,9 @@ async def insert_vectored_chunks(vectored_chunks: list[VectoredChunk]) -> None:
 
         logging.debug(f"Finished inserting batch number {batch_count} duration {datetime.now() - start_batch}")
 
-    await METRICS.update_database(chunks_inserted=len(vectored_chunks))
+    await METRICS.update_database(chunks_inserted=len(chunks))
     logging.debug(
-        f"Finished inserting {len(vectored_chunks)} article embeddings, total duration {datetime.now() - start_all}")
+        f"Finished inserting {len(chunks)} article embeddings, total duration {datetime.now() - start_all}")
 
 
 async def delete_vectored_chunks(chunks: list[ChunkMetadata]) -> None:
@@ -226,8 +226,8 @@ async def delete_vectored_chunks(chunks: list[ChunkMetadata]) -> None:
         f"Finished deleting {len(chunks)} article embeddings total duration {datetime.now() - start_all}")
 
 
-async def update_article_metadata(vectored_diff: VectoredChunkedArticleDiff) -> None:
-    new_metadata: ChunkedArticleMetadataOnly = ChunkedArticleMetadataOnly.from_vectored_diff(vectored_diff)
+async def update_article_metadata(chunked_diff: ChunkedArticleDiff) -> None:
+    new_metadata: ChunkedArticleMetadataOnly = ChunkedArticleMetadataOnly.from_chunked_diff(chunked_diff)
     logging.debug(
         f"Updating article metadata for article url {new_metadata.article_metadata.url}")
 

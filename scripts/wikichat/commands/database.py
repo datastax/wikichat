@@ -61,19 +61,16 @@ async def suggested_search(args: SuggestedSearchArgs) -> None:
         recent_articles = RecentArticles.from_dict(resp["data"]["documents"][0])
 
         question = f"I want to know more about this topic: {recent_articles.recent_articles[0].metadata.title}"
-        question_vectors = await embeddings.get_embeddings([question], input_type='search_query')
-        question_vector: list[float] = question_vectors[0]
-
         resp = await wrap_blocking_io(
             lambda: EMBEDDINGS_COLLECTION.find(
-                sort={"$vector": question_vector},
-                projection={"title": 1, "url": 1, "content": 1},
+                sort={"$vectorize": question},
+                projection={"title": 1, "url": 1, "$vectorize": 1},
                 options={"limit": args.limit})
         )
 
         logging.info(f"QUERY: {question}")
         for doc in resp["data"]["documents"]:
-            logging.info(f"Title: {doc['title']}\nURL: {doc['url']}\nContent: {doc['content'][:100]}...\n")
+            logging.info(f"Title: {doc['title']}\nURL: {doc['url']}\nContent: {doc['$vectorize'][:100]}...\n")
         count += 1
 
         await asyncio.sleep(args.delay_secs)
