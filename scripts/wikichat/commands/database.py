@@ -39,7 +39,7 @@ async def embed_and_search(args: EmbedAndSearchArgs) -> None:
     resp = EMBEDDINGS_COLLECTION.find(
         filter=filter,
         sort={"$vector": question_vector},
-        projection={"title": 1, "url": 1, "content": 1},
+        projection={"title": 1, "url": 1, "$vectorize": 1},
         options={"limit": limit})
 
     print(f"QUERY: {args.query}")
