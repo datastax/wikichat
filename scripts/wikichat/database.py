@@ -24,7 +24,7 @@ _ALL_COLLECTION_NAMES: list[str] = [_ARTICLE_EMBEDDINGS_NAME, _ARTICLE_METADATA_
 
 # Create the collections on the server, this will fail gracefully if they already exist
 ASTRA_DB.create_collection(collection_name=_ARTICLE_EMBEDDINGS_NAME, dimension=1024,
-                           options={"vectorize": { "service": "nvidia", "options": { "modelName": "NV-Embed-QA-query" }}})
+                           options={"vectorize": { "service": "nvidia", "options": { "modelName": "NV-Embed-QA" }}})
 ASTRA_DB.create_collection(collection_name=_ARTICLE_METADATA_NAME)
 ASTRA_DB.create_collection(collection_name=_ARTICLE_SUGGESTIONS_NAME)
 
