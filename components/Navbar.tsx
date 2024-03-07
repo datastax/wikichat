@@ -52,7 +52,7 @@ const Navbar = ({ llm, setConfiguration, theme, setTheme }: Props): JSX.Element 
         <path id="T" d="M224.213 2.23083H200.338V6.03484H210.392V31.2293H214.158V6.03484H224.213V2.23083Z" fill="currentColor"/>
       </svg>
       <div className="flex gap-2 md:ml-auto">
-        <Listbox value={selectedLlm} by="value" onChange={handleChange}>
+        {/* <Listbox value={selectedLlm} by="value" onChange={handleChange}>
           <div className="relative">
             <Listbox.Button className="h-10 px-4 rounded-full inline-flex justify-between gap-2 items-center bg-primary text-inverse hover:bg-primary-hover">
               {selectedLlm.label}
@@ -72,7 +72,7 @@ const Navbar = ({ llm, setConfiguration, theme, setTheme }: Props): JSX.Element 
                 ))}
             </Listbox.Options>
           </div>
-        </Listbox>
+        </Listbox> */}
 
         <button onClick={handleToggle} className="inline-flex border items-center justify-center rounded-full bg-body hover:bg-bg-1 w-10 h-10">
           {theme === 'dark' ? (

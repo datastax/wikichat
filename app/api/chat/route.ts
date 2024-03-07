@@ -50,7 +50,7 @@ export async function POST(req: Request) {
   Standalone question:`
 
       const condenseResp = await openai.chat.completions.create({
-        model: llm ?? 'gpt-4',
+        model: 'gpt-3.5-turbo',
         stream: false,
         messages: [{ role: "user", content: condensePrompt}],
       });
@@ -94,7 +94,7 @@ if the context is empty, answer it to the best of your ability. If you cannot fi
 QUESTION: ${question}`;
 
     const resp = await openai.chat.completions.create({
-      model: llm ?? 'gpt-4',
+      model: 'gpt-4',
       stream: true,
       messages: [{ role: "user", content: prompt }],
     });
