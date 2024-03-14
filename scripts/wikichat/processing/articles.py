@@ -109,45 +109,11 @@ async def calc_chunk_diff(chunked_article: ChunkedArticle) -> ChunkedArticleDiff
         deleted_chunks=deleted_chunks,
         unchanged_chunks=unchanged_chunks)
 
-
-# async def vectorize_diff(article_diff: ChunkedArticleDiff) -> VectoredChunkedArticleDiff | None:
-#     """Calc the vectors for all the chunks we want to store in the db"""
-#
-#     logging.debug(f"Getting embeddings for article {article_diff.chunked_article.article.metadata.url} "
-#                   "which has {len(article_diff.new_chunks)} new chunks")
-#
-#     vectors = await embeddings.get_embeddings([chunk.content for chunk in article_diff.new_chunks])
-#     await METRICS.update_chunks(chunks_vectorized=len(vectors))
-#
-#     # We can get vectors with all zeros, this could be because overloaded or objectionable content
-#     # this will be rare, so count the non zero vectors and if we have any zero vectors skip the article
-#     non_zero_vectors = list(vector for vector in vectors if any(x != 0 for x in vector))
-#     zero_vector_count = len(vectors) > len(non_zero_vectors)
-#     if zero_vector_count:
-#         logging.debug(
-#             f"Skipping article {article_diff.chunked_article.article.metadata.url} cohere returned {zero_vector_count} zero vectors")
-#         for i in range(len(vectors)):
-#             if all([x == 0 for x in vectors[i]]):
-#                 logging.debug(
-#                     f"Zero vector for chunk in {article_diff.chunked_article.article.metadata.url} content= {article_diff.new_chunks[i].content}")
-#         await METRICS.update_article(zero_vectors=1)
-#         return None
-#
-#     return VectoredChunkedArticleDiff(
-#         chunked_article=article_diff.chunked_article,
-#         new_chunks=[
-#             VectoredChunk(vector=vector, chunked_article=article_diff.chunked_article, chunk=chunk)
-#             for vector, chunk, in zip(vectors, article_diff.new_chunks, )
-#         ],
-#         deleted_chunks=article_diff.deleted_chunks
-#     )
-
-
 async def store_article_diff(chunked_diff: ChunkedArticleDiff) -> ChunkedArticleDiff:
     # HACK - update the meta data first, if there is an error we will fail before we insert the chunks
     # this is not ideal, but I think it will reduce the amount of chunk collisions under load
     await update_article_metadata(chunked_diff)
-    await insert_chunks(chunked_diff.chunked_article. article, chunked_diff.new_chunks)
+    await insert_chunks(chunked_diff.chunked_article.article, chunked_diff.new_chunks)
     await delete_vectored_chunks(chunked_diff.deleted_chunks)
 
     return chunked_diff

@@ -56,7 +56,7 @@ export async function POST(req: Request) {
       });
 
       if (condenseResp.choices[0].message) {
-        question = condenseResp.choices[0].message;
+        question = condenseResp.choices[0].message.content;
       }
     }
 
