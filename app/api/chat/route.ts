@@ -12,7 +12,7 @@ import {
 import {
   AstraDBVectorStore,
   AstraLibArgs,
-} from "@langchain/community/vectorstores/astradb";
+} from "@langchain/community/vectorstores/astradb"
 
 import { StreamingTextResponse, Message } from "ai";
 
@@ -100,7 +100,14 @@ export async function POST(req: Request) {
     const astraConfig: AstraLibArgs = {
       token: ASTRA_DB_APPLICATION_TOKEN,
       endpoint: ASTRA_DB_API_ENDPOINT,
+      namespace: "default_keyspace",
       collection: "article_embeddings",
+      collectionOptions: {
+        vector: {
+          dimension: 1024,
+          metric: "cosine",
+        }
+      },
       contentKey: "content",
     };
 
