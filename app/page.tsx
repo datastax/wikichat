@@ -38,7 +38,7 @@ export default function Home() {
     const fiddlerIngestion = async (question: string, answer: string, context: string, url: string) => {
         try {
             const response = await axios.post(
-                "/api/fiddlerIngestion",
+                "/api/fiddler_ingestion",
                 { question: question, answer: answer, context: context, url: url },
                 {
                     headers: {

@@ -60,8 +60,6 @@ export async function POST(req: NextRequest, res: NextResponse) {
             { question: question },
             { answer: answer },
             { documents: context },
-            { feedback: answer.includes("sorry") ? feedback[2] : feedback[0] },
-            { comment: comments[0] },
             { url: url },
             { timestamp: Math.floor(Date.now() / 1000) },
         ],
