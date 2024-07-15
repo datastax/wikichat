@@ -22,7 +22,7 @@ each step.
 
 def create_pipeline(max_items: int = 100, rotate_collection_every: int = 0) -> AsyncPipeline:
     return AsyncPipeline(max_items=max_items, error_listener=METRICS.listen_to_step_error) \
-        .add_step(AsyncStep(load_article, 2)) \
+        .add_step(AsyncStep(load_article, 10)) \
         .add_step(AsyncStep(chunk_article, 2)) \
         .add_step(AsyncStep(calc_chunk_diff, 5)) \
         .add_step(AsyncStep(vectorize_diff, 5)) \
