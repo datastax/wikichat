@@ -5,15 +5,27 @@ import { StringOutputParser } from "@langchain/core/output_parsers";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { RunnableBranch, RunnableLambda, RunnableMap, RunnableSequence } from "@langchain/core/runnables";
 import { AstraDBVectorStore, AstraLibArgs } from "@langchain/community/vectorstores/astradb";
+import { DataAPIClient, CreateCollectionOptions } from "@datastax/astra-db-ts";
 
 import { StreamingTextResponse, Message } from "ai";
 
-const { ASTRA_DB_APPLICATION_TOKEN, ASTRA_DB_API_ENDPOINT, COHERE_API_KEY, OPENAI_API_KEY } = process.env;
+const { ASTRA_DB_APPLICATION_TOKEN, ASTRA_DB_API_ENDPOINT, DB_ENV, COHERE_API_KEY, OPENAI_API_KEY } = process.env;
+
+// create Astra connection first
+let dbEnv: string;
+dbEnv = "astra"
+
+if ('DB_ENV' in process.env) {
+  dbEnv = DB_ENV.toLowerCase()
+}
 
 interface ChainInput {
     chat_history: string;
     question: string;
 }
+
+const client = new DataAPIClient({ environment: dbEnv});
+const astraDb = client.db(ASTRA_DB_API_ENDPOINT, {token: ASTRA_DB_APPLICATION_TOKEN, namespace: "default_keyspace"});
 
 const condenseQuestionTemplate = `Given the following chat history and a follow up question, If the follow up question references previous parts of the chat rephrase the follow up question to be a standalone question if not use the follow up question as the standalone question.
 
@@ -93,7 +105,15 @@ export async function POST(req: Request) {
             contentKey: "content",
         };
 
+        const astraCollectionOptions: CreateCollectionOptions = {
+            "vector":{"dimension":1024,"metric":"cosine"},
+            //"defaultId":{"type":"objectId"},
+            checkExists: false
+        };
+
         const vectorStore = new AstraDBVectorStore(embeddings, astraConfig);
+        vectorStore['astraDBClient'] = astraDb;
+        vectorStore['collectionOptions'] = astraCollectionOptions;
 
         await vectorStore.initialize();
 

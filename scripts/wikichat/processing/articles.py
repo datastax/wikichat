@@ -66,7 +66,7 @@ async def calc_chunk_diff(chunked_article: ChunkedArticle) -> ChunkedArticleDiff
         lambda x: METADATA_COLLECTION.find_one(filter={"_id": x}),
         new_metadata._id
     )
-    prev_metadata_doc = resp["data"]["document"]
+    prev_metadata_doc = resp
 
     if not prev_metadata_doc:
         logging.debug(f"No previous metadata, all chunks are new")
@@ -168,23 +168,30 @@ async def insert_vectored_chunks(vectored_chunks: list[VectoredChunk]) -> None:
 
         # use options.ordered = false so documents can be inserted in parallel
         logging.debug(f"Inserting batch number {batch_count} with size {len(batch)}")
-        resp = await wikichat.utils.wrap_blocking_io(
-            lambda x: EMBEDDINGS_COLLECTION.insert_many(
-                documents=x,
-                options={"ordered": False},
-                partial_failures_allowed=True
-            ),
-            [article_embedding.to_dict() for article_embedding in article_embeddings]
-        )
+
+        errored_ids = []
+        try:
+            resp = await wikichat.utils.wrap_blocking_io(
+                lambda x: EMBEDDINGS_COLLECTION.insert_many(
+                    documents=x,
+                    ordered=False
+                ),
+                [article_embedding.to_dict() for article_embedding in article_embeddings]
+            )
+        except InsertManyException as err:
+            inserted_ids_set = set(err.partial_result.inserted_ids)
+            errored_ids = [
+                document["_id"]
+                for document in x
+                if document["_id"] not in inserted_ids_set
+            ]
 
         # We are OK with DOCUMENT_ALREADY_EXISTS errors
-        errors = resp.get("errors", [])
-        exists_errors = [error for error in errors if error.get("errorCode") == "DOCUMENT_ALREADY_EXISTS"]
-        if exists_errors:
+        if len(errored_ids) > 0:
             logging.debug(
-                f"Got {len(exists_errors)} DOCUMENT_ALREADY_EXISTS errors, ignoring. Chunks {exists_errors}")
-            await METRICS.update_database(chunk_collision=len(exists_errors))
-
+                f"Got {len(errored_ids)} DOCUMENT_ALREADY_EXISTS errors, ignoring. Chunks {errored_ids}")
+            await METRICS.update_database(chunk_collision=len(errored_ids))
+        
             inserted_ids = {doc_id for doc_id in resp["status"]["insertedIds"]}
             for article_embedding in article_embeddings:
                 if article_embedding._id not in inserted_ids:
@@ -192,10 +199,10 @@ async def insert_vectored_chunks(vectored_chunks: list[VectoredChunk]) -> None:
                     doc = article_embedding.to_dict()
                     doc.pop("$vector", None)
                     existing_chunk_logger.warning(doc)
-
-        if len(errors) != len(exists_errors):
-            logging.error(f"Got non DOCUMENT_ALREADY_EXISTS errors, stopping: {errors}")
-            raise ValueError(json.dumps(errors))
+        
+        #if len(errors) != len(exists_errors):
+        #    logging.error(f"Got non DOCUMENT_ALREADY_EXISTS errors, stopping: {errors}")
+        #    raise ValueError(json.dumps(errors))
 
         logging.debug(f"Finished inserting batch number {batch_count} duration {datetime.now() - start_batch}")
 
@@ -235,7 +242,7 @@ async def update_article_metadata(vectored_diff: VectoredChunkedArticleDiff) -> 
         lambda x: METADATA_COLLECTION.find_one_and_replace(
             filter={"_id": x._id},
             replacement=x.to_dict(),
-            options={"upsert": True}
+            upsert=True
         ),
         new_metadata
     )
@@ -246,7 +253,7 @@ async def update_article_metadata(vectored_diff: VectoredChunkedArticleDiff) -> 
         lambda x: SUGGESTIONS_COLLECTION.find_one_and_replace(
             filter={"_id": x._id},
             replacement=x.to_dict(),
-            options={"upsert": True}
+            upsert=True
         ),
         recent_articles
     )
