@@ -1,4 +1,4 @@
-import { AstraDB } from "@datastax/astra-db-ts";
+import { DataAPIClient } from "@datastax/astra-db-ts";
 import OpenAI from "openai";
 import type { ChatCompletionCreateParams } from "openai/resources/chat";
 import { CATEGORIES } from "../../../utils/consts";
@@ -7,9 +7,20 @@ const {
   ASTRA_DB_APPLICATION_TOKEN,
   ASTRA_DB_API_ENDPOINT,
   OPENAI_API_KEY,
+  DB_ENV,
 } = process.env;
 
-const astraDb = new AstraDB(ASTRA_DB_APPLICATION_TOKEN, ASTRA_DB_API_ENDPOINT);
+let dbEnv: string;
+dbEnv = "astra"
+
+if ('DB_ENV' in process.env) {
+  dbEnv = DB_ENV.toLowerCase()
+}
+
+console.log("DB_ENV=" + dbEnv)
+
+const client = new DataAPIClient({ environment: dbEnv});
+const astraDb = client.db(ASTRA_DB_API_ENDPOINT, {token: ASTRA_DB_APPLICATION_TOKEN, namespace: "default_keyspace"});
 
 const openai = new OpenAI({
   apiKey: OPENAI_API_KEY,
@@ -43,6 +54,7 @@ export async function POST(req: Request) {
       docContext = JSON.stringify(docMap);
     } catch (e) {
       console.log("Error querying db...");
+      console.log(e)
     }
 
 
