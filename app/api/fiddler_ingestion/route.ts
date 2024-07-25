@@ -6,8 +6,6 @@ enum EnvType {
     PRODUCTION = "PRODUCTION",
     PRE_PRODUCTION = "PRE_PRODUCTION",
 }
-const comments = ["Great", "Good", "Bad"];
-const feedback = ["Like", "Dislike", "Neutral"];
 const environment = EnvType.PRODUCTION;
 
 function getAuthenticatedSession(): AxiosInstance {
@@ -46,7 +44,7 @@ async function publishOrUpdateEvents(
 }
 
 export async function POST(req: NextRequest, res: NextResponse) {
-    const fields = ["question", "answer", "context", "url"];
+    const fields = ["question", "answer", "documents", "url"];
     const data = await req.json();
     for (const field of fields) {
         if (!data[field]) {
@@ -57,11 +55,13 @@ export async function POST(req: NextRequest, res: NextResponse) {
     const source = {
         type: "EVENTS",
         events: [
-            { question: question },
-            { answer: answer },
-            { documents: context },
-            { url: url },
-            { timestamp: Math.floor(Date.now() / 1000) },
+            {
+                question: question,
+                answer: answer,
+                documents: context,
+                url: url,
+                timestamp: Math.floor(Date.now() / 1000),
+            },
         ],
     };
     try {
