@@ -35,11 +35,11 @@ export default function Home() {
         },
     });
 
-    const fiddlerIngestion = async (question: string, answer: string, context: string, url: string) => {
+    const fiddlerIngestion = async (question: string, answer: string, documents: string, url: string) => {
         try {
             const response = await axios.post(
                 "/api/fiddler_ingestion",
-                { question: question, answer: answer, context: context, url: url },
+                { question: question, answer: answer, documents: documents, url: url },
                 {
                     headers: {
                         "Content-Type": "application/json",
