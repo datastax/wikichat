@@ -176,7 +176,7 @@ The metrics are broken into the following sections:
   * Articles read: The number of articles successfuly read from the database, these are articles that have been updated since the last time we read them
   * Articles inserted: The number of articles inserted into the database, including both the first time we see an article and any subsequent updates
 * Pipeline: Information about the states of the asyncronous processing pipeline, each stage has a queue of articles to be processed 
-  * load_article: The number of articles waiting to be scrapped from wikipedia
+  * load_article: The number of articles waiting to be scraped from wikipedia
   * chunk_article: The number of articles waiting to be chunked
   * calc_chunk_diff: The number of articles waiting to have a diff calculated
   * vectorize_diff: The number of articles waiting to have new chunks vectorized (not the count of chunks)
