@@ -155,7 +155,7 @@ Articles:
 The metrics are broken into the following sections:
 * Processing: Information on the Python process 
     * Total Time (h:mm:s): The total time the script has been running
-    * Report interval (s): How frewuently the report is generated
+    * Report interval (s): How frequently the report is generated
 * Wikipedia Listener: Information about listening to Wikipedia changes
   * Total events: The total number of events received from Wikipedia changes
   * Canary events: The number of events that were canaries, i.e. not real edits
