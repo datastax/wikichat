@@ -5,6 +5,7 @@ Metrics should only be updated via the single METRICS object, which is a singlet
 
 The pipeline will create an async tak to call :meth:`~Metrics.metrics_reporter_task` to report the metrics every N seconds.
 """
+
 import asyncio
 import json
 import logging
@@ -61,7 +62,9 @@ class _Metrics:
     _listener: ListenerMetrics = field(default_factory=ListenerMetrics)
     _database: DBMetrics = field(default_factory=DBMetrics)
     _chunks: Chunks = field(default_factory=Chunks)
-    _rotating_collections: RotatingCollections = field(default_factory=RotatingCollections)
+    _rotating_collections: RotatingCollections = field(
+        default_factory=RotatingCollections
+    )
     _article: ArticleMetrics = field(default_factory=ArticleMetrics)
     _error_by_code: dict[str, int] = field(default_factory=dict)
     report_interval_secs: int = 10
@@ -70,8 +73,14 @@ class _Metrics:
         self._start_secs = time.time()
         self._async_lock = asyncio.Lock()
 
-    async def update_listener(self, total_events: int = 0, canary_events: int = 0, bot_events: int = 0,
-                              skipped_events: int = 0, enwiki_edits: int = 0):
+    async def update_listener(
+        self,
+        total_events: int = 0,
+        canary_events: int = 0,
+        bot_events: int = 0,
+        skipped_events: int = 0,
+        enwiki_edits: int = 0,
+    ):
         async with self._async_lock:
             self._listener.total_events += total_events
             self._listener.canary_events += canary_events
@@ -81,9 +90,15 @@ class _Metrics:
             return None
             # return self._maybe_describe(pipeline=pipeline) if describe else None
 
-    async def update_database(self, chunks_inserted: int = 0, chunks_deleted: int = 0, chunks_unchanged: int = 0,
-                              chunk_collision: int = 0,
-                              articles_inserted: int = 0, articles_read: int = 0):
+    async def update_database(
+        self,
+        chunks_inserted: int = 0,
+        chunks_deleted: int = 0,
+        chunks_unchanged: int = 0,
+        chunk_collision: int = 0,
+        articles_inserted: int = 0,
+        articles_read: int = 0,
+    ):
         async with self._async_lock:
             self._database.chunks_inserted += chunks_inserted
             self._database.chunks_deleted += chunks_deleted
@@ -99,8 +114,14 @@ class _Metrics:
         async with self._async_lock:
             self._rotating_collections.rotations += rotations
 
-    async def update_chunks(self, chunks_created: int = 0, chunk_diff_new: int = 0, chunk_diff_deleted: int = 0,
-                            chunk_diff_unchanged: int = 0, chunks_vectorized: int = 0):
+    async def update_chunks(
+        self,
+        chunks_created: int = 0,
+        chunk_diff_new: int = 0,
+        chunk_diff_deleted: int = 0,
+        chunk_diff_unchanged: int = 0,
+        chunks_vectorized: int = 0,
+    ):
         async with self._async_lock:
             self._chunks.chunks_created += chunks_created
             self._chunks.chunk_diff_new += chunk_diff_new
@@ -108,7 +129,9 @@ class _Metrics:
             self._chunks.chunk_diff_unchanged += chunk_diff_unchanged
             self._chunks.chunks_vectorized += chunks_vectorized
 
-    async def update_article(self, redirects: int = 0, zero_vectors: int = 0, recent_url: str = None):
+    async def update_article(
+        self, redirects: int = 0, zero_vectors: int = 0, recent_url: str = None
+    ):
         async with self._async_lock:
             self._article.redirects += redirects
             self._article.zero_vectors += zero_vectors
@@ -126,7 +149,7 @@ class _Metrics:
             api_errors: list[Any] = []
             try:
                 api_errors = json.loads(error.args[0])
-            except:
+            except Exception:
                 pass
             for api_error in api_errors:
                 match api_error:
@@ -135,7 +158,9 @@ class _Metrics:
                     case {"message": message}:
                         these_errors[message] = these_errors.get(message, 0) + 1
                     case _:
-                        these_errors["Unknown API ERROR"] = these_errors.get("Unknown API ERROR", 0) + 1
+                        these_errors["Unknown API ERROR"] = (
+                            these_errors.get("Unknown API ERROR", 0) + 1
+                        )
         if not these_errors:
             # just collection by the error type
             name: str = error.__class__.__name__
@@ -155,18 +180,16 @@ class _Metrics:
         def _pprint_urls(urls):
             if not urls:
                 return "None"
-            return " ".join([
-                s.replace("https://en.wikipedia.org/wiki", "")
-                for s in urls
-            ])
+            return " ".join(
+                [s.replace("https://en.wikipedia.org/wiki", "") for s in urls]
+            )
 
         def _pperrors(errors):
             if not errors:
                 return "None"
-            return "\n    ".join([
-                f"{code:24}: {_pprint(count)}"
-                for code, count in errors.items()
-            ])
+            return "\n    ".join(
+                [f"{code:24}: {_pprint(count)}" for code, count in errors.items()]
+            )
 
         async with self._async_lock:
             processing_time: timedelta = timedelta(seconds=now - self._start_secs)
@@ -206,7 +229,9 @@ Articles:
             self._article.recent_urls.clear()
             return desc
 
-    async def metrics_reporter_task(self, pipeline: AsyncPipeline, interval_seconds: int = 10):
+    async def metrics_reporter_task(
+        self, pipeline: AsyncPipeline, interval_seconds: int = 10
+    ):
         try:
             while True:
                 desc: str = await self.describe(pipeline)

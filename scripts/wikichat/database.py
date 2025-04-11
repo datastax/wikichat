@@ -3,6 +3,7 @@ This file contains the code to setup the database. It will create the collection
 
 Importing the module initialises the database.
 """
+
 import logging
 import os
 
@@ -26,16 +27,16 @@ ASTRA_DB = ASTRA_DB_CLIENT.get_database(
 _ARTICLE_EMBEDDINGS_NAME = "article_embeddings"
 _ARTICLE_METADATA_NAME = "article_metadata"
 _ARTICLE_SUGGESTIONS_NAME = "article_suggestions"
-_ALL_COLLECTION_NAMES: list[str] = [_ARTICLE_EMBEDDINGS_NAME, _ARTICLE_METADATA_NAME, _ARTICLE_SUGGESTIONS_NAME]
+_ALL_COLLECTION_NAMES: list[str] = [
+    _ARTICLE_EMBEDDINGS_NAME,
+    _ARTICLE_METADATA_NAME,
+    _ARTICLE_SUGGESTIONS_NAME,
+]
 
 # Create the collections on the server, this will fail gracefully if they already exist
 ASTRA_DB.create_collection(
     _ARTICLE_EMBEDDINGS_NAME,
-    definition=(
-        CollectionDefinition.builder()
-        .set_vector_dimension(1024)
-        .build()
-    ),
+    definition=(CollectionDefinition.builder().set_vector_dimension(1024).build()),
 )
 ASTRA_DB.create_collection(_ARTICLE_METADATA_NAME)
 ASTRA_DB.create_collection(_ARTICLE_SUGGESTIONS_NAME)
@@ -45,7 +46,11 @@ EMBEDDINGS_COLLECTION = ASTRA_DB.get_collection(_ARTICLE_EMBEDDINGS_NAME)
 METADATA_COLLECTION = ASTRA_DB.get_collection(_ARTICLE_METADATA_NAME)
 SUGGESTIONS_COLLECTION = ASTRA_DB.get_collection(_ARTICLE_SUGGESTIONS_NAME)
 
-_ALL_COLLECTIONS: list[Collection] = [EMBEDDINGS_COLLECTION, METADATA_COLLECTION, SUGGESTIONS_COLLECTION]
+_ALL_COLLECTIONS: list[Collection] = [
+    EMBEDDINGS_COLLECTION,
+    METADATA_COLLECTION,
+    SUGGESTIONS_COLLECTION,
+]
 _ROTATED_COLLECTIONS: list[Collection] = [EMBEDDINGS_COLLECTION, METADATA_COLLECTION]
 
 
@@ -63,10 +68,11 @@ async def try_truncate_collection(collection: Collection) -> None:
     # This can timeout sometimes, so lets retry :)
     for i in range(5):
         try:
-            logging.info(f"Attempt {i} Truncating collection {collection.collection_name}")
-            await wikichat.utils.wrap_blocking_io(
-                lambda: collection.delete_many({})
-            )
+            logging.info(f"Attempt {i} Truncating collection {collection.name}")
+            await wikichat.utils.wrap_blocking_io(lambda: collection.delete_many({}))
             break
         except Exception:
-            logging.exception(f"Retrying, error truncating collection {collection.collection_name}", exc_info=True)
+            logging.exception(
+                f"Retrying, error truncating collection {collection.name}",
+                exc_info=True,
+            )
