@@ -5,6 +5,7 @@ These should be plain data classes, and should not import other parts of the wik
 """
 
 import asyncio
+from typing import Optional
 from dataclasses import dataclass, field, replace
 
 from dataclasses_json import config, dataclass_json
@@ -20,7 +21,7 @@ class ArticleMetadata:
     """Metadata about an article we may want to process"""
 
     url: str
-    title: str = None
+    title: Optional[str] = None
 
 
 @dataclass
@@ -28,7 +29,7 @@ class Article:
     """An article we are going to process, has the metadata and the content scrapped from the source"""
 
     metadata: ArticleMetadata
-    content: str = None
+    content: Optional[str] = None
 
 
 @dataclass
@@ -142,7 +143,7 @@ class EmbeddingDocument:
 
     _id: str
     url: str
-    title: str
+    title: Optional[str]
     document_id: str
     chunk_index: int
     content: str
@@ -190,7 +191,7 @@ class RecentArticles:
         self._lock = asyncio.Lock()
 
     async def update_and_clone(
-        self, article: ChunkedArticleMetadataOnly, clear_list: bool = False
+        self, article: Optional[ChunkedArticleMetadataOnly], clear_list: bool = False
     ) -> "RecentArticles":
         max_recent_articles: int = 5
         async with self._lock:

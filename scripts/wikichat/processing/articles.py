@@ -7,12 +7,11 @@ The processing/__init__.py file joins these functions together into a pipeline.
 import hashlib
 import logging
 from datetime import datetime
-from typing import cast
+from typing import cast, Optional
 
 from astrapy.exceptions import CollectionInsertManyException, DataAPIResponseException
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
-import wikichat.utils
 from wikichat.database import (
     EMBEDDINGS_COLLECTION,
     METADATA_COLLECTION,
@@ -33,6 +32,7 @@ from wikichat.processing.model import (
     RECENT_ARTICLES,
     RecentArticles,
 )
+from wikichat.utils import batch_list
 from wikichat.utils.metrics import METRICS
 from wikichat.utils.pipeline import AsyncPipeline
 
@@ -48,13 +48,13 @@ TEXT_SPLITTER = RecursiveCharacterTextSplitter(
 # ======================================================================================================================
 
 
-async def load_article(meta: ArticleMetadata) -> Article:
+async def load_article(meta: ArticleMetadata) -> Optional[Article]:
     """Loads the article content from the URL and cleans it up"""
     return await wikipedia.scrape_article(meta)
 
 
 async def chunk_article(article: Article) -> ChunkedArticle:
-    chunks = TEXT_SPLITTER.split_text(article.content)
+    chunks = TEXT_SPLITTER.split_text(article.content or "")
     logging.debug(f"Split article {article.metadata.url} into {len(chunks)} chunks")
 
     hashes = [hashlib.sha256(chunk.encode("utf-8")).hexdigest() for chunk in chunks]
@@ -87,8 +87,8 @@ async def calc_chunk_diff(chunked_article: ChunkedArticle) -> ChunkedArticleDiff
         f"Calculating chunk delta for article {chunked_article.article.metadata.url}"
     )
     # get the existing chunks from the db
-    prev_metadata_doc = await wikichat.utils.wrap_blocking_io(
-        lambda x: METADATA_COLLECTION.find_one(filter={"_id": x}), new_metadata._id
+    prev_metadata_doc = await METADATA_COLLECTION.find_one(
+        filter={"_id": new_metadata._id}
     )
 
     if not prev_metadata_doc:
@@ -99,7 +99,7 @@ async def calc_chunk_diff(chunked_article: ChunkedArticle) -> ChunkedArticleDiff
         )
     # We found existing article metadata, see if anything has changed
     await METRICS.update_database(articles_read=1)
-    prev_metadata: ChunkedArticleMetadataOnly = ChunkedArticleMetadataOnly.from_dict(
+    prev_metadata: ChunkedArticleMetadataOnly = ChunkedArticleMetadataOnly.from_dict(  # type: ignore[attr-defined]
         prev_metadata_doc
     )
 
@@ -210,7 +210,7 @@ async def insert_vectored_chunks(vectored_chunks: list[VectoredChunk]) -> None:
 
     start_all = datetime.now()
     batch: list[VectoredChunk]
-    for batch_count, batch in wikichat.utils.batch_list(
+    for batch_count, batch in batch_list(
         vectored_chunks, batch_size, enumerate_batches=True
     ):
         start_batch = datetime.now()
@@ -220,10 +220,9 @@ async def insert_vectored_chunks(vectored_chunks: list[VectoredChunk]) -> None:
 
         logging.debug(f"Inserting batch number {batch_count} with size {len(batch)}")
         try:
-            await wikichat.utils.wrap_blocking_io(
-                lambda x: EMBEDDINGS_COLLECTION.insert_many(documents=x),
+            await EMBEDDINGS_COLLECTION.insert_many(
                 [
-                    article_embedding.to_dict()
+                    article_embedding.to_dict()  # type: ignore[attr-defined]
                     for article_embedding in article_embeddings
                 ],
             )
@@ -254,7 +253,7 @@ async def insert_vectored_chunks(vectored_chunks: list[VectoredChunk]) -> None:
                 for article_embedding in article_embeddings:
                     if article_embedding._id not in inserted_ids:
                         # remove the vector, it will be too big to log
-                        doc = article_embedding.to_dict()
+                        doc = article_embedding.to_dict()  # type: ignore[attr-defined]
                         doc.pop("$vector", None)
                         existing_chunk_logger.warning(doc)
             else:
@@ -280,14 +279,11 @@ async def delete_vectored_chunks(chunks: list[ChunkMetadata]) -> None:
     )
 
     start_all = datetime.now()
-    for batch_count, batch in wikichat.utils.batch_list(
-        chunks, batch_size, enumerate_batches=True
-    ):
+    for batch_count, batch in batch_list(chunks, batch_size, enumerate_batches=True):
         start_batch = datetime.now()
         logging.debug(f"Deleting batch number {batch_count} with size {len(batch)}")
-        await wikichat.utils.wrap_blocking_io(
-            lambda x: EMBEDDINGS_COLLECTION.delete_many(filter={"_id": {"$in": x}}),
-            [chunk.hash for chunk in batch],
+        await EMBEDDINGS_COLLECTION.delete_many(
+            filter={"_id": {"$in": [chunk.hash for chunk in batch]}}
         )
         logging.debug(
             f"Finished deleting batch number {batch_count} duration {datetime.now() - start_batch}"
@@ -306,26 +302,20 @@ async def update_article_metadata(vectored_diff: VectoredChunkedArticleDiff) -> 
         f"Updating article metadata for article url {new_metadata.article_metadata.url}"
     )
 
-    await wikichat.utils.wrap_blocking_io(
-        lambda x: METADATA_COLLECTION.find_one_and_replace(
-            filter={"_id": x._id},
-            replacement=x.to_dict(),
-            upsert=True,
-        ),
-        new_metadata,
+    await METADATA_COLLECTION.find_one_and_replace(
+        filter={"_id": new_metadata._id},
+        replacement=new_metadata.to_dict(),  # type: ignore[attr-defined]
+        upsert=True,
     )
 
     # TODO COmment
     recent_articles: RecentArticles = await RECENT_ARTICLES.update_and_clone(
         new_metadata
     )
-    await wikichat.utils.wrap_blocking_io(
-        lambda x: SUGGESTIONS_COLLECTION.find_one_and_replace(
-            filter={"_id": x._id},
-            replacement=x.to_dict(),
-            upsert=True,
-        ),
-        recent_articles,
+    await SUGGESTIONS_COLLECTION.find_one_and_replace(
+        filter={"_id": recent_articles._id},
+        replacement=recent_articles.to_dict(),  # type: ignore[attr-defined]
+        upsert=True,
     )
     await METRICS.update_database(articles_inserted=1)
     await METRICS.update_article(recent_url=new_metadata.article_metadata.url)

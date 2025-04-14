@@ -8,7 +8,7 @@ This is used by :mod:`wikichat.processing` to build a pipeline of commands defin
 import asyncio
 import contextvars
 import logging
-from typing import Callable, Any, Union
+from typing import Any, Awaitable, Callable, Optional, Union
 
 # used by the pipeline and the log filter to get the worker name
 WORKER_NAME_CONTEXT_VAR = contextvars.ContextVar(
@@ -23,20 +23,20 @@ class AsyncStep:
         self,
         func: Callable[[Any], Any],
         num_tasks: int,
-        listener: Callable[["AsyncStep", Any], bool] = None,
+        listener: Optional[Callable[["AsyncStep", Any], Awaitable[bool]]] = None,
     ):
         self.func: Callable[[Any], Any] = func
         self.name: str = self.func.__name__
         self.num_tasks: int = num_tasks
 
         self._listener = listener
-        self._error_listener: Callable[[Exception], None] = None
+        self._error_listener: Optional[Callable[[Exception], Awaitable[None]]] = None
 
         self._source: asyncio.Queue = asyncio.Queue()
         self._next_step: Union["AsyncStep", None] = None
 
         # see start_tasks
-        self.tasks = []
+        self.tasks: list[asyncio.Task] = []
 
     def start_tasks(self):
         """Create the tasks and get them listening to the source queue.
@@ -66,10 +66,11 @@ class AsyncStep:
             # listener need to handle async
             context_token = WORKER_NAME_CONTEXT_VAR.set(worker_name)
             try:
+                process_item: bool
                 if self._listener is None:
                     process_item = True
                 else:
-                    process_item: bool = await self._listener(self, item)
+                    process_item = await self._listener(self, item)
                 if not process_item:
                     continue
                 result = await self.func(item)
@@ -101,7 +102,9 @@ class AsyncPipeline:
     """The pipeline of :class:`AsyncStep` that will process items through the steps"""
 
     def __init__(
-        self, max_items: int = 0, error_listener: Callable[[Exception], None] = None
+        self,
+        max_items: int = 0,
+        error_listener: Optional[Callable[[Exception], Awaitable[None]]] = None,
     ):
         self.steps: list[AsyncStep] = []
         self._put_count: int = 0
@@ -120,7 +123,7 @@ class AsyncPipeline:
 
     def add_last_step(self, step: AsyncStep) -> "AsyncPipeline":
         # set the last step dest to be None so we do not fill up the queue with no readers
-        step.dest = None
+        # step.dest = None
         self.add_step(step)
         return self
 

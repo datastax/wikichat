@@ -4,10 +4,12 @@ Initialise and call the Cohere client to get embeddings
 
 import logging
 import os
+from typing import List
 
 import cohere
-from cohere.types.embed_by_type_response import EmbedByTypeResponse
 from dotenv import load_dotenv
+
+EMBED_RESULT_TYPE = cohere.types.embed_response.EmbeddingsByTypeEmbedResponse
 
 load_dotenv()
 
@@ -20,7 +22,7 @@ async def get_embeddings(
 ) -> list[list[float]]:
     try:
         # Cohere client will batch up the texts to the size it wants, so send all the chunks at once
-        response: EmbedByTypeResponse = await COHERE_CLIENT.embed(
+        response: EMBED_RESULT_TYPE = await COHERE_CLIENT.embed(  # type: ignore[assignment]
             texts=texts,
             model=EMBEDDING_MODEL,
             input_type=input_type,
@@ -31,5 +33,6 @@ async def get_embeddings(
         raise
 
     # response.embeddings is a list and has the same number of elements as the chunks
-    assert len(response.embeddings.float) == len(texts)
-    return response.embeddings.float
+    float_lists: List[List[float]] = response.embeddings.float  # type: ignore[attr-defined]
+    assert len(float_lists) == len(texts)
+    return float_lists

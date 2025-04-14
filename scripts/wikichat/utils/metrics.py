@@ -12,7 +12,7 @@ import logging
 import time
 from dataclasses import dataclass, field
 from datetime import timedelta
-from typing import Any
+from typing import Any, Optional, Tuple
 
 from wikichat.utils.pipeline import AsyncPipeline
 
@@ -106,7 +106,7 @@ class _Metrics:
             self._database.articles_inserted += articles_inserted
             self._database.articles_read += articles_read
 
-    async def get_rotation_stats(self) -> (int, int):
+    async def get_rotation_stats(self) -> Tuple[int, int]:
         async with self._async_lock:
             return self._rotating_collections.rotations, self._database.chunks_inserted
 
@@ -130,7 +130,10 @@ class _Metrics:
             self._chunks.chunks_vectorized += chunks_vectorized
 
     async def update_article(
-        self, redirects: int = 0, zero_vectors: int = 0, recent_url: str = None
+        self,
+        redirects: int = 0,
+        zero_vectors: int = 0,
+        recent_url: Optional[str] = None,
     ):
         async with self._async_lock:
             self._article.redirects += redirects
@@ -232,14 +235,15 @@ Articles:
     async def metrics_reporter_task(
         self, pipeline: AsyncPipeline, interval_seconds: int = 10
     ):
+        desc: str
         try:
             while True:
-                desc: str = await self.describe(pipeline)
+                desc = await self.describe(pipeline)
                 logging.info(desc)
                 await asyncio.sleep(interval_seconds)
         except asyncio.CancelledError:
             # report one last time
-            desc: str = await self.describe(pipeline)
+            desc = await self.describe(pipeline)
             logging.info(desc)
             raise
 

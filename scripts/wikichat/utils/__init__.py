@@ -1,5 +1,4 @@
-import asyncio
-from typing import Any, Generator, Callable
+from typing import Any, Generator
 
 
 def batch_list(
@@ -15,9 +14,3 @@ def batch_list(
             batch_count += 1
         else:
             yield full_list[offset : offset + batch_size]
-
-
-async def wrap_blocking_io(func: Callable, *args):
-    """Wrap a blocking IO call in an asyncio task"""
-    loop = asyncio.get_running_loop()
-    return await loop.run_in_executor(None, func, *args)

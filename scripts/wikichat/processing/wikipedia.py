@@ -7,7 +7,7 @@ import re
 from dataclasses import replace
 
 import aiohttp
-from bs4 import BeautifulSoup, ResultSet as bs4ResultSet
+from bs4 import BeautifulSoup, ResultSet as bs4ResultSet, Tag
 
 from wikichat.processing.model import ArticleMetadata, Article
 from wikichat.utils.metrics import METRICS
@@ -63,12 +63,17 @@ async def scrape_article(meta: ArticleMetadata) -> Article | None:
         return None
 
     # Remove images
-    for img in content.find_all("img"):
-        img.decompose()
+    if isinstance(content, Tag):
+        for img in content.find_all("img"):
+            img.decompose()
 
     # Extract text content from specific tags
-    all_elements: bs4ResultSet = content.find_all(VALID_TAGS)
-    cleaned_content: str = " ".join([element.get_text() for element in all_elements])
+    cleaned_content: str
+    if isinstance(content, Tag):
+        all_elements: bs4ResultSet = content.find_all(VALID_TAGS)
+        cleaned_content = " ".join([element.get_text() for element in all_elements])
+    else:
+        cleaned_content = ""
     cleaned_content = PATTERN_SQUARE_BRACKETS.sub("", cleaned_content)
     cleaned_content = PATTERN_UNWANTED_CHARS.sub("", cleaned_content)
     cleaned_content = PATTERN_SPACES.sub(" ", cleaned_content)
@@ -85,7 +90,9 @@ def _redirects_to(meta: ArticleMetadata, soup: BeautifulSoup) -> str | None:
     # https://en.wikipedia.org/wiki/USA_for_Africa redirects to https://en.wikipedia.org/wiki/We_Are_the_World
     # Canonical will be the same as the URL for articles that do not redirect
     canonical_link = soup.find("link", attrs={"rel": "canonical"})
-    new_url = canonical_link.get("href") if canonical_link else None
+    new_url = (
+        str(canonical_link.get("href")) if isinstance(canonical_link, Tag) else None
+    )
 
     return new_url if new_url and new_url != meta.url else None
 

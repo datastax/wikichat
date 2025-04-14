@@ -4,9 +4,8 @@ The processing steps for ingesting wikipedia articles are in this module.
 
 import asyncio
 import logging
-from typing import Any
+from typing import Any, Tuple
 
-import wikichat
 from wikichat import database
 from wikichat.database import SUGGESTIONS_COLLECTION
 from wikichat.processing.articles import (
@@ -96,18 +95,15 @@ class _RotationListener:
             recent_articles = await RECENT_ARTICLES.update_and_clone(
                 None, clear_list=True
             )
-            await wikichat.utils.wrap_blocking_io(
-                lambda x: SUGGESTIONS_COLLECTION.find_one_and_replace(
-                    filter={"_id": x._id},
-                    replacement=x.to_dict(),
-                    upsert=True,
-                ),
-                recent_articles,
+            await SUGGESTIONS_COLLECTION.find_one_and_replace(
+                filter={"_id": recent_articles._id},
+                replacement=recent_articles.to_dict(),  # type: ignore[attr-defined]
+                upsert=True,
             )
             await METRICS.update_rotation_stats(rotations=1)
         return True
 
-    async def _should_rotate(self) -> (bool, int, int):
+    async def _should_rotate(self) -> Tuple[bool, int, int]:
         rotations_count, chunks_inserted = await METRICS.get_rotation_stats()
         should_rotate: bool = chunks_inserted > 0 and chunks_inserted >= (
             self._rotate_collection_every * (rotations_count + 1)

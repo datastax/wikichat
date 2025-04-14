@@ -13,7 +13,6 @@ from wikichat.commands.model import EmbedAndSearchArgs, SuggestedSearchArgs
 from wikichat.database import EMBEDDINGS_COLLECTION, SUGGESTIONS_COLLECTION
 from wikichat.processing import embeddings
 from wikichat.processing.model import RecentArticles
-from wikichat.utils import wrap_blocking_io
 
 
 # ======================================================================================================================
@@ -44,30 +43,28 @@ async def embed_and_search(args: EmbedAndSearchArgs) -> None:
     limit = args.limit or 5
     filter = args._filter or {}
     resp = EMBEDDINGS_COLLECTION.find(
-        filter=filter,
+        filter,
         sort={"$vector": question_vector},
         projection={"title": 1, "url": 1, "content": 1},
-        options={"limit": limit},
+        limit=limit,
     )
 
     print(f"QUERY: {args.query}")
     print(f"Filter: {filter}")
     print(f"Limit: {limit} ")
     print("Ordered Results:")
-    for doc in resp:
+    async for doc in resp:
         print(json.dumps(doc, indent=2))
 
 
 async def suggested_search(args: SuggestedSearchArgs) -> None:
     count = 1
     while args.repeats == 0 or (args.repeats != 0 and count <= args.repeats):
-        resp_list = await wrap_blocking_io(
-            lambda: SUGGESTIONS_COLLECTION.find(
-                filter={"_id": "recent_articles"},
-                limit=1,
-            ).to_list()
-        )
-        recent_articles = RecentArticles.from_dict(resp_list[0])
+        resp_list = await SUGGESTIONS_COLLECTION.find(
+            filter={"_id": "recent_articles"},
+            limit=1,
+        ).to_list()
+        recent_articles = RecentArticles.from_dict(resp_list[0])  # type: ignore[attr-defined]
 
         question = f"I want to know more about this topic: {recent_articles.recent_articles[0].metadata.title}"
         question_vectors = await embeddings.get_embeddings(
@@ -75,16 +72,14 @@ async def suggested_search(args: SuggestedSearchArgs) -> None:
         )
         question_vector: list[float] = question_vectors[0]
 
-        resp = await wrap_blocking_io(
-            lambda: EMBEDDINGS_COLLECTION.find(
-                sort={"$vector": question_vector},
-                projection={"title": 1, "url": 1, "content": 1},
-                options={"limit": args.limit},
-            )
+        resp = EMBEDDINGS_COLLECTION.find(
+            sort={"$vector": question_vector},
+            projection={"title": 1, "url": 1, "content": 1},
+            limit=args.limit,
         )
 
         logging.info(f"QUERY: {question}")
-        for doc in resp:
+        async for doc in resp:
             logging.info(
                 f"Title: {doc['title']}\nURL: {doc['url']}\nContent: {doc['content'][:100]}...\n"
             )

@@ -4,10 +4,10 @@ COmmands that process articles through the pipeline
 
 import json
 import logging
-from typing import Any
+from typing import Any, Optional
 
 from aiohttp import ClientPayloadError
-from aiohttp_sse_client2.client import MessageEvent, EventSource
+from aiohttp_sse_client2.client import MessageEvent, EventSource  # type: ignore[import-untyped]
 
 from wikichat.commands.model import CommonPipelineArgs, LoadPipelineArgs
 from wikichat.processing.articles import process_article_metadata
@@ -41,7 +41,7 @@ async def listen_for_changes(pipeline: AsyncPipeline, args: CommonPipelineArgs) 
         async with EventSource(WIKIPEDIA_CHANGES_URL, timeout=None) as event_source:
             try:
                 async for event in event_source:
-                    event_doc: dict[Any, Any] = maybe_parse_wiki_event(event)
+                    event_doc: Optional[dict[Any, Any]] = maybe_parse_wiki_event(event)
                     match event_doc:
                         case {"meta": {"domain": "canary"}}:
                             # these are events used by wikipedia to test the service, ignore them
@@ -57,7 +57,8 @@ async def listen_for_changes(pipeline: AsyncPipeline, args: CommonPipelineArgs) 
                             # namespace 0 is the  wikipedia article namespace, this skips talk pages etc.
                             # see https://en.wikipedia.org/wiki/Wikipedia:Namespace
                             article_metadata: ArticleMetadata = ArticleMetadata(
-                                title=event_doc["title"], url=event_doc["title_url"]
+                                title=event_doc["title"],  # type: ignore[index]
+                                url=event_doc["title_url"],  # type: ignore[index]
                             )
 
                             # Let's process this article!
