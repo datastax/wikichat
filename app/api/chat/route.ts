@@ -91,6 +91,12 @@ export async function POST(req: Request) {
             endpoint: ASTRA_DB_API_ENDPOINT,
             collection: "article_embeddings",
             contentKey: "content",
+            collectionOptions: {
+                vector: {
+                    dimension: 1024,
+                    metric: "cosine",
+                },
+            }
         };
 
         const vectorStore = new AstraDBVectorStore(embeddings, astraConfig);
